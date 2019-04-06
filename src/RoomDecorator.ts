@@ -1,8 +1,10 @@
 export default class RoomDecorator {
     public readonly sources: Source[];
+    public readonly constructionSites: ConstructionSite[];
 
     constructor(private room: Room) {
       this.sources = room.find(FIND_SOURCES);
+      this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES);
     }
 
     sayAt(object, text) {
@@ -11,10 +13,6 @@ export default class RoomDecorator {
         object.pos.x + 1,
         object.pos.y,
         { align: 'left', opacity: 0.8 });
-    }
-
-    getConstructionSites() {
-      return this.room.find(FIND_CONSTRUCTION_SITES);
     }
 
     getTransferrableStructures(): Structure[] {

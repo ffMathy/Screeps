@@ -1,5 +1,5 @@
 import CreepDecorator, { CreepStrategy } from "CreepDecorator";
-import Resources from "resources";
+import Resources from "Resources";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
 
 export default class HarvestCreepStrategy implements CreepStrategy {
