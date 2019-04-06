@@ -33,7 +33,8 @@ export default class HarvestCreepStrategy implements CreepStrategy {
         creep.creep.moveTo(reservedSource, { visualizePathStyle: { stroke: '#ffffff' }});
       }
     } else {
-      creep.setStrategy(new WithdrawCreepStrategy());
+      //TODO: handle withdrawal from extension.
+      creep.setStrategy(new StrategyPickingCreepStrategy());
     }
   }
 }
