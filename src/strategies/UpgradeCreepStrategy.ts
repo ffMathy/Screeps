@@ -6,6 +6,8 @@ export default class UpgradeCreepStrategy implements CreepStrategy {
   }
 
   tick(creep: CreepDecorator) {
-    creep.upgradeController();
+    if (creep.creep.upgradeController(creep.creep.room.controller) == ERR_NOT_IN_RANGE) {
+      creep.creep.moveTo(creep.creep.room.controller, { visualizePathStyle: { stroke: '#ffffff' } });
+    }
   }
 }

@@ -8,6 +8,9 @@ export default class HarvestCreepStrategy implements CreepStrategy {
   }
 
   tick(creep: CreepDecorator) {
+    if(creep.creep.carry.energy == creep.creep.carryCapacity)
+      return creep.setStrategy(new StrategyPickingCreepStrategy());
+
     let sources = creep.room.sources;
     let reservedSource: Source = null;
     for (let source of sources) {
@@ -23,6 +26,7 @@ export default class HarvestCreepStrategy implements CreepStrategy {
         creep.creep.moveTo(reservedSource);
       }
     } else {
+      console.log('can\'t harvest - all sources reserved.', creep.creep.id);
       creep.setStrategy(new StrategyPickingCreepStrategy());
     }
   }

@@ -1,7 +1,7 @@
 import CreepDecorator from "CreepDecorator";
 import creeps from "creeps";
 
-class Resources {
+export default class Resources {
   private reservations = {};
 
   private static singleton: Resources;
@@ -17,6 +17,9 @@ class Resources {
     if (this.isReserved(creep, resourceId))
       return false;
 
+    if(this.reservations[resourceId] !== creep)
+      console.log('reserved resource', creep.creep.id, resourceId);
+
     this.reservations[resourceId] = creep;
     creep.memory.reservationId = resourceId;
 
@@ -24,11 +27,15 @@ class Resources {
   }
 
   unreserve(_creep: CreepDecorator, resourceId: string) {
+    if(!(resourceId in this.reservations))
+      return;
+
+    console.log('unreserved resource', this.reservations[resourceId].creep.id, resourceId);
     delete this.reservations[resourceId];
   }
 
   isReserved(creep: CreepDecorator, resourceId: string) {
-    return resourceId in this.reservations && this.reservations[resourceId].id !== creep.id;
+    return resourceId in this.reservations && this.reservations[resourceId].creep.id !== creep.creep.id;
   }
 
   static get instance() {
@@ -38,5 +45,3 @@ class Resources {
     return this.singleton;
   }
 }
-
-export default Resources;

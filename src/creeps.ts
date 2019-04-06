@@ -1,7 +1,7 @@
 import CreepDecorator from 'CreepDecorator';
 
 class Creeps {
-  public readonly all: CreepDecorator[];
+  public all: CreepDecorator[];
 
   constructor() {
     this.all = [];

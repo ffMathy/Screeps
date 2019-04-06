@@ -2,7 +2,7 @@ export default class RoomDecorator {
     public readonly sources: Source[];
     public readonly constructionSites: ConstructionSite[];
 
-    constructor(private room: Room) {
+    constructor(public room: Room) {
       this.sources = room.find(FIND_SOURCES);
       this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES);
     }
