@@ -1,5 +1,6 @@
 import CreepDecorator, { CreepStrategy } from "CreepDecorator";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
+import Resources from "Resources";
 
 export default class BuildingCreepStrategy implements CreepStrategy {
   get name() {
@@ -7,6 +8,8 @@ export default class BuildingCreepStrategy implements CreepStrategy {
   }
 
   tick(creep: CreepDecorator) {
+    Resources.instance.unreserve(creep);
+
     if(creep.creep.carry.energy == 0)
       return creep.setStrategy(new StrategyPickingCreepStrategy());
 
