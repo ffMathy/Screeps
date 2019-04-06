@@ -23,7 +23,7 @@ export default class HarvestCreepStrategy implements CreepStrategy {
 
     if (reservedSource) {
       if(creep.creep.harvest(reservedSource) === ERR_NOT_IN_RANGE) {
-        creep.creep.moveTo(reservedSource);
+        creep.creep.moveTo(reservedSource, { visualizePathStyle: { stroke: '#ffffff' }});
       }
     } else {
       console.log('can\'t harvest - all sources reserved.', creep.creep.id);
