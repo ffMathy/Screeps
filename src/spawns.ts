@@ -1,4 +1,3 @@
-import rooms from 'rooms';
 import creeps from 'creeps';
 import CreepDecorator from 'CreepDecorator';
 

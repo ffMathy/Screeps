@@ -1,11 +1,11 @@
 import CreepDecorator, { CreepStrategy } from "CreepDecorator";
 
-export default class ParkingCreepStrategy implements CreepStrategy {
+export default class UpgradeCreepStrategy implements CreepStrategy {
   get name() {
-    return "park";
+    return "upgrade";
   }
 
   tick(creep: CreepDecorator) {
-    creep.park();
+    creep.upgradeController();
   }
 }

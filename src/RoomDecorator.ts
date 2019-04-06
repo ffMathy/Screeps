@@ -17,7 +17,7 @@ export default class RoomDecorator {
       return this.room.find(FIND_CONSTRUCTION_SITES);
     }
 
-    getTransferrableStructures() {
+    getTransferrableStructures(): Structure[] {
       return this.room.find(FIND_STRUCTURES, {
         filter: (structure) => {
           return (structure.structureType == STRUCTURE_EXTENSION ||

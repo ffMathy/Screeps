@@ -1,9 +1,14 @@
 import CreepDecorator, { CreepStrategy } from "CreepDecorator";
 import BuildingCreepStrategy from "./BuildingCreepStrategy";
-import ParkingCreepStrategy from "./ParkingCreepStrategy";
 import HarvestCreepStrategy from "./HarvestCreepStrategy";
+import TransferCreepStrategy from "./TransferCreepStrategy";
+import UpgradeCreepStrategy from "./UpgradeCreepStrategy";
 
 export default class StrategyPickingCreepStrategy implements CreepStrategy {
+  get name() {
+    return "look";
+  }
+
   tick(creep: CreepDecorator) {
     let energyCarry = creep.creep.carry.energy;
     let carryCapacity = creep.creep.carryCapacity;
@@ -16,6 +21,10 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
     if(availableConstructionSites.length > 0)
       return creep.setStrategy(new BuildingCreepStrategy());
 
-    return creep.setStrategy(new ParkingCreepStrategy());
+    let availableTransferSites = creep.room.getTransferrableStructures();
+    if(availableTransferSites.length > 0)
+      return creep.setStrategy(new TransferCreepStrategy());
+
+    return creep.setStrategy(new UpgradeCreepStrategy());
   }
 }
