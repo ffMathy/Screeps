@@ -12,13 +12,20 @@ export default class HarvestCreepStrategy implements CreepStrategy {
       return creep.setStrategy(new StrategyPickingCreepStrategy());
 
     let sources = creep.room.sources;
+    let reservedId = creep.memory.reservationId;
     let reservedSource: Source = null;
-    for (let source of sources) {
-      if(!Resources.instance.reserve(creep, source.id))
-        continue;
+    if(reservedId) {
+      reservedSource = sources.filter(x => x.id === reservedId)[0];
+    }
 
-      reservedSource = source;
-      break;
+    if(!reservedSource) {
+      for (let source of sources) {
+        if(!Resources.instance.reserve(creep, source.id))
+          continue;
+
+        reservedSource = source;
+        break;
+      }
     }
 
     if (reservedSource) {
