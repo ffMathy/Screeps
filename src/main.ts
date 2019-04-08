@@ -1,6 +1,6 @@
+import rooms from 'rooms';
 import spawns from 'spawns';
 import creeps from 'creeps';
-import rooms from 'rooms';
 
 import 'Resources';
 

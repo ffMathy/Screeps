@@ -12,13 +12,11 @@ export default class HarvestCreepStrategy implements CreepStrategy {
       return creep.setStrategy(new StrategyPickingCreepStrategy());
 
     let sources = creep.room.sources;
-    let reservedId = () => creep.memory.reservationId;
+    let reservedId = creep.memory.reservationId;
     let reservedSource: Source = null;
     if(reservedId) {
-      reservedSource = sources.filter(x => x.id === reservedId())[0];
-    }
-
-    if(!reservedSource) {
+      reservedSource = sources.filter(x => x.id === reservedId)[0];
+    } else {
       for (let source of sources) {
         if(!Resources.instance.reserve(creep, source.id))
           continue;
@@ -29,15 +27,12 @@ export default class HarvestCreepStrategy implements CreepStrategy {
     }
 
     if (reservedSource) {
-      if(!Resources.instance.isReservedBy(creep, reservedId())) {
-        delete creep.memory.reservationId;
-        return;
-      }
-
       if(creep.creep.harvest(reservedSource) === ERR_NOT_IN_RANGE) {
         creep.creep.moveTo(reservedSource, { visualizePathStyle: { stroke: '#ffffff' }});
       }
     } else {
+      Resources.instance.unreserve(creep);
+  
       //TODO: handle withdrawal from extension.
       creep.setStrategy(new StrategyPickingCreepStrategy());
     }

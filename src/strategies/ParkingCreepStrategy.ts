@@ -1,7 +1,6 @@
 import CreepDecorator, { CreepStrategy } from "CreepDecorator";
 import rooms from "rooms";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
-import Resources from "Resources";
 
 export default class ParkingCreepStrategy implements CreepStrategy {
   private _tickCount: number;
@@ -17,9 +16,7 @@ export default class ParkingCreepStrategy implements CreepStrategy {
   tick(creep: CreepDecorator) {
     this._tickCount++;
 
-    Resources.instance.unreserve(creep);
-
-    if((this._tickCount % 5 === 0) || (16 === creep.creep.pos.x && 13 === creep.creep.pos.y)) {
+    if((this._tickCount % 15 === 0) || (16 === creep.creep.pos.x && 13 === creep.creep.pos.y)) {
         return creep.setStrategy(new StrategyPickingCreepStrategy());
     }
 

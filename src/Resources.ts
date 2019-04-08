@@ -1,12 +1,32 @@
 import CreepDecorator from "CreepDecorator";
 import creeps from "creeps";
+import rooms from "rooms";
+
+interface Resource {
+  terrainCapacity: number;
+  reservationCount: number;
+}
 
 export default class Resources {
-  private reservations = {};
+  private resources: {[id: string]: Resource} = {};
 
   private static singleton: Resources;
 
   constructor(creeps: CreepDecorator[]) {
+    this.resources = {};
+
+    for(let source of rooms.mainRoom.sources) {
+      let resource = {} as Resource;
+      resource.reservationCount = 0;
+      
+      let tiles = source.room.lookForAtArea(LOOK_TERRAIN, source.pos.y-1, source.pos.x-1, source.pos.y+1, source.pos.x+1, true);
+      if(!Array.isArray(tiles))
+        throw new Error('Could not load tiles.');
+
+      resource.terrainCapacity = 9 - _.countBy(tiles, "terrain" ).wall;
+      this.resources[source.id] = resource;
+    }
+
     for (let creep of creeps) {
       if (creep.memory.reservationId)
         this.reserve(creep, creep.memory.reservationId);
@@ -14,14 +34,12 @@ export default class Resources {
   }
 
   reserve(creep: CreepDecorator, resourceId: string) {
-    if (this.isReserved(creep, resourceId))
+    if (this.isReserved(resourceId))
       return false;
 
-    if(this.reservations[resourceId] !== creep)
-      console.log('reserved resource', creep.creep.id, resourceId);
-
-    this.reservations[resourceId] = creep;
+    let resource = this.resources[resourceId];
     creep.memory.reservationId = resourceId;
+    resource.reservationCount++;
 
     return true;
   }
@@ -31,19 +49,17 @@ export default class Resources {
     if(!resourceId)
       return;
 
-    if(!(resourceId in this.reservations))
-      return;
+    delete creep.memory.reservationId;
 
-    console.log('unreserved resource', this.reservations[resourceId].creep.id, resourceId);
-    delete this.reservations[resourceId];
+    if(this.resources[resourceId].reservationCount > 0)
+      this.resources[resourceId].reservationCount--;
+
+    //console.log('unreserved resource', resourceId);
   }
 
-  isReservedBy(creep: CreepDecorator, resourceId: string) {
-    return resourceId in this.reservations && this.reservations[resourceId].creep.id === creep.creep.id;
-  }
-
-  isReserved(creep: CreepDecorator, resourceId: string) {
-    return resourceId in this.reservations && this.reservations[resourceId].creep.id !== creep.creep.id;
+  isReserved(resourceId: string) {
+    let resource = this.resources[resourceId];
+    return resource.reservationCount >= resource.terrainCapacity;
   }
 
   static get instance() {
