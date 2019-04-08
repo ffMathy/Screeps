@@ -17,7 +17,7 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
 
     let isFull = energyCarry === carryCapacity;
     let isEmpty = energyCarry == 0;
-    let availableSources = creep.room.sources.filter(x => !Resources.instance.canReserve(creep, x.id));
+    let availableSources = creep.room.sources.filter(x => !Resources.instance.isReserved(creep, x.id));
     if(!isFull && availableSources.length > 0)
       return creep.setStrategy(new HarvestCreepStrategy());
 
