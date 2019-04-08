@@ -14,7 +14,7 @@ export default class HarvestCreepStrategy implements CreepStrategy {
     let sources = creep.room.sources;
     let reservedId = creep.memory.reservationId;
     let reservedSource: Source = null;
-    if(reservedId) {
+    if(reservedId && Resources.instance.isReservedBy(creep, reservedId)) {
       reservedSource = sources.filter(x => x.id === reservedId)[0];
     }
 

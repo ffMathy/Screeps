@@ -14,7 +14,7 @@ export default class Resources {
   }
 
   reserve(creep: CreepDecorator, resourceId: string) {
-    if (this.isReserved(creep, resourceId))
+    if (this.canReserve(creep, resourceId))
       return false;
 
     if(this.reservations[resourceId] !== creep)
@@ -38,7 +38,11 @@ export default class Resources {
     delete this.reservations[resourceId];
   }
 
-  isReserved(creep: CreepDecorator, resourceId: string) {
+  isReservedBy(creep: CreepDecorator, resourceId: string) {
+    return resourceId in this.reservations && this.reservations[resourceId].creep.id === creep.creep.id;
+  }
+
+  canReserve(creep: CreepDecorator, resourceId: string) {
     return resourceId in this.reservations && this.reservations[resourceId].creep.id !== creep.creep.id;
   }
 
