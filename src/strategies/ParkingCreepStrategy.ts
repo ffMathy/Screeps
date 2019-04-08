@@ -13,8 +13,7 @@ export default class ParkingCreepStrategy implements CreepStrategy {
   tick(creep: CreepDecorator) {
     Resources.instance.unreserve(creep);
 
-    if(this.lastPosition) {
-      if(this.lastPosition.x === creep.creep.pos.x && this.lastPosition.y === creep.creep.pos.y)
+    if(16 === creep.creep.pos.x && 13 === creep.creep.pos.y) {
         return creep.setStrategy(new StrategyPickingCreepStrategy());
     }
 
