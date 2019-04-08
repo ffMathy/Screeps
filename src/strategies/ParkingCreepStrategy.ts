@@ -16,6 +16,5 @@ export default class ParkingCreepStrategy implements CreepStrategy {
     }
 
     creep.creep.moveTo(new RoomPosition(16, 13, rooms.mainRoom.room.name), { visualizePathStyle: { stroke: '#ffffff' } });
-    this.lastPosition = {...creep.creep.pos};
   }
 }
