@@ -8,8 +8,10 @@ export default class HarvestCreepStrategy implements CreepStrategy {
   }
 
   tick(creep: CreepDecorator) {
-    if(creep.creep.carry.energy == creep.creep.carryCapacity)
+    if(creep.creep.carry.energy == creep.creep.carryCapacity) {
+      Resources.instance.unreserve(creep);
       return creep.setStrategy(new StrategyPickingCreepStrategy());
+    }
 
     let sources = creep.room.sources;
     let reservedId = creep.memory.reservationId;
