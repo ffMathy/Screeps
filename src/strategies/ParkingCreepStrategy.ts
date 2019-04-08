@@ -4,8 +4,6 @@ import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
 import Resources from "Resources";
 
 export default class ParkingCreepStrategy implements CreepStrategy {
-  private lastPosition: RoomPosition;
-
   get name() {
     return "park";
   }
