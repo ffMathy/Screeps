@@ -1,6 +1,7 @@
 import rooms from 'rooms';
 import RoomDecorator from 'RoomDecorator';
 import StrategyPickingCreepStrategy from 'strategies/StrategyPickingCreepStrategy';
+import creeps from 'creeps';
 
 export interface CreepMemory {
   reservationId: string;
@@ -36,8 +37,7 @@ export default class CreepDecorator {
       this.creep = Game.creeps[this.creep.name];
       
     if(!this.creep || this.creep.ticksToLive <= 3) {
-      console.log('creep needing cleanup.', this.creep.id);
-      (Game.cpu as any).halt();
+      creeps.all.splice(creeps.all.indexOf(this), 1);
       return;
     }
 
