@@ -29,7 +29,6 @@ export default class CreepDecorator {
 
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
-    this.tick();
   }
 
   tick() {
