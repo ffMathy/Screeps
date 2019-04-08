@@ -33,7 +33,9 @@ export default class CreepDecorator {
   }
 
   tick() {
-    this.creep = Game.creeps[this.creep.name];
+    if(this.creep)
+      this.creep = Game.creeps[this.creep.name];
+      
     if(!this.creep || this.creep.ticksToLive <= 3) {
       console.log('creep needing cleanup.', this.creep.id);
       (Game.cpu as any).halt();
