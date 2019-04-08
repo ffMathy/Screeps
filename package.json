@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "",
   "main": "./dist/main.js",
-  "repository": "screepers/screeps-typescript-starter",
+  "repository": "ffMathy/Screeps",
   "scripts": {
     "postinstall": "typings install",
     "deploy": "webpack --colors --env.ENV=dev",
@@ -23,7 +23,7 @@
     "git-rev-sync": "^1.9.1",
     "lodash": "^3.10.1",
     "mocha": "^3.3.0",
-    "screeps-webpack-plugin": "git://github.com/langri-sha/screeps-webpack-plugin.git",
+    "screeps-webpack-plugin": "https://github.com/langri-sha/screeps-webpack-plugin.git",
     "source-map-loader": "^0.2.1",
     "ts-node": "^3.0.4",
     "tslint": "^5.2.0",

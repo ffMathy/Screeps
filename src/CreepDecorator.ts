@@ -33,6 +33,11 @@ export default class CreepDecorator {
   }
 
   tick() {
+    if(!this.creep) {
+      console.log('creep reference lost.');
+      return;
+    }
+
     this.creep = Game.creeps[this.creep.name];
     if(!this.creep || this.creep.ticksToLive <= 3) {
       console.log('creep needing cleanup.', this.creep.id);
