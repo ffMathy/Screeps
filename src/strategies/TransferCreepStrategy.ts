@@ -10,6 +10,9 @@ export default class TransferCreepStrategy implements CreepStrategy {
   tick(creep: CreepDecorator) {
     Resources.instance.unreserve(creep);
 
+    if(creep.creep.carry.energy == 0)
+      return creep.setStrategy(new StrategyPickingCreepStrategy());
+
     let targets = creep.room.getTransferrableStructures();
     if (targets.length > 0) {
       var transferResult = creep.creep.transfer(targets[0], RESOURCE_ENERGY);
