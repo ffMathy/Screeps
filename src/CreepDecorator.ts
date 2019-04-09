@@ -26,6 +26,9 @@ export default class CreepDecorator {
     private readonly game: GameDecorator,
     public creep: Creep)
   {
+    for(let key in creep.memory)
+      delete creep.memory[key];
+
     this.room = game.rooms.fromCreep(creep);
     this.strategy = new StrategyPickingCreepStrategy();
   }
@@ -36,8 +39,8 @@ export default class CreepDecorator {
 
     opts.visualizePathStyle = { stroke: '#ffffff' };
 
-    let game = GameDecorator.instance;
-    opts.reusePath = 15; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
+    // let game = GameDecorator.instance;
+    opts.reusePath = 10; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
 
     return this.creep.moveTo(target, opts);
   }
