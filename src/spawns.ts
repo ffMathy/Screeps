@@ -63,7 +63,7 @@ class Spawns {
     }
 
     tick() {
-        this.maintainPopulation([MOVE, MOVE, CARRY, WORK], 10);
+        this.maintainPopulation([MOVE, MOVE, CARRY, WORK], 15);
     }
 };
 
