@@ -37,7 +37,7 @@ export default class CreepDecorator {
     opts.visualizePathStyle = { stroke: '#ffffff' };
 
     let game = GameDecorator.instance;
-    opts.reusePath = game.usedCpu < game.availableCpu / 2 ? 25 : 1;
+    opts.reusePath = 15; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
 
     return this.creep.moveTo(target, opts);
   }
