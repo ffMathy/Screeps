@@ -50,10 +50,12 @@ export default class CreepDecorator {
   }
 
   tick() {
+    const oldCreep = this.creep;
     if(this.creep)
       this.creep = Game.creeps[this.creep.name];
 
-    if(!this.creep || this.creep.ticksToLive <= 3) {
+    if(!this.creep || oldCreep.ticksToLive <= 3) {
+      this.game.resources.unreserve(oldCreep);
       this.game.creeps.all.splice(this.game.creeps.all.indexOf(this), 1);
       return;
     }

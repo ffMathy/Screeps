@@ -3,9 +3,9 @@ import GameDecorator from "GameDecorator";
 import RoomsDecorator from "RoomsDecorator";
 
 export default class RoomDecorator {
-    public readonly sources: Source[];
-    public readonly constructionSites: ConstructionSite[];
-    public readonly spawns: SpawnDecorator[];
+    public sources: Source[];
+    public constructionSites: ConstructionSite[];
+    public spawns: SpawnDecorator[];
 
     private _neighbouringRoomsByDirection: {[direction: string]: RoomDecorator};
     private _allNeighbouringRooms: RoomDecorator[];
@@ -39,11 +39,15 @@ export default class RoomDecorator {
       this._neighbouringRoomsByDirection = {};
       this._allNeighbouringRooms = [];
 
+      this.refresh();
+    }
+
+    refresh() {
       this.sources = this.isClaimed ? this.room.find(FIND_SOURCES) : [];
       this.constructionSites = this.isClaimed ? this.room.find(FIND_CONSTRUCTION_SITES) : [];
       this.spawns = this.isClaimed ? this.room
         .find(FIND_MY_SPAWNS)
-        .map((x: Spawn) => new SpawnDecorator(game, this, x)) : [];
+        .map((x: Spawn) => new SpawnDecorator(this.game, this, x)) : [];
     }
 
     getRandomUnexploredNeighbourName() {

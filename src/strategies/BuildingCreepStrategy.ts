@@ -16,8 +16,10 @@ export default class BuildingCreepStrategy implements CreepStrategy {
         creep.moveTo(target);
       } else {
         target = Game.getObjectById(target.id);
-        if(target.progress >= target.progressTotal)
-          console.log('construction completed');
+        if(!target || target.progress >= target.progressTotal) {
+          creep.room.refresh();
+          return creep.setStrategy(new StrategyPickingCreepStrategy());
+        }
       }
     } else {
       return creep.setStrategy(new StrategyPickingCreepStrategy());

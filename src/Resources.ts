@@ -37,7 +37,7 @@ export default class Resources {
     return true;
   }
 
-  unreserve(creep: CreepDecorator) {
+  unreserve(creep: CreepDecorator | Creep) {
     let resourceId = creep.memory.reservationId;
     if(!resourceId)
       return;
