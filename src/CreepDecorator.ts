@@ -66,8 +66,8 @@ export default class CreepDecorator {
     }
 
     let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
-    if(strategyTickDifference < 5)
-      this.creep.say(this.strategy.name);
+    if(strategyTickDifference < 10)
+      this.creep.say(this.strategy.name, true);
 
     this.strategy.tick(this);
   }

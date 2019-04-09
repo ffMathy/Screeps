@@ -77,6 +77,6 @@ export default class SpawnDecorator {
     }
 
     tick() {
-        this.maintainPopulation([MOVE, CARRY, WORK], 10);
+        this.maintainPopulation([MOVE, CARRY, WORK], 15);
     }
 };
