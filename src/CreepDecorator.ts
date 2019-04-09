@@ -16,6 +16,7 @@ export default class CreepDecorator {
   public room: RoomDecorator;
 
   private strategy: CreepStrategy;
+  private lastStrategyTick: number;
 
   public get memory(): CreepMemory {
     return this.creep.memory;
@@ -36,13 +37,14 @@ export default class CreepDecorator {
     opts.visualizePathStyle = { stroke: '#ffffff' };
 
     let game = GameDecorator.instance;
-    opts.reusePath = game.usedCpu < game.availableCpu / 1.25 ? 25 : 1;
+    opts.reusePath = game.usedCpu < game.availableCpu / 2 ? 25 : 1;
 
     return this.creep.moveTo(target, opts);
   }
 
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
+    this.lastStrategyTick = this.game.tickCount;
   }
 
   updateRoom() {
@@ -60,7 +62,10 @@ export default class CreepDecorator {
       return;
     }
 
-    this.creep.say(this.strategy.name);
+    let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
+    if(strategyTickDifference < 5)
+      this.creep.say(this.strategy.name);
+
     this.strategy.tick(this);
   }
 }

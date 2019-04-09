@@ -13,6 +13,10 @@ export default class GameDecorator {
 
   private static _instance: GameDecorator;
 
+  public get tickCount() {
+    return Game.time;
+  }
+
   public static get instance() {
     if(!this._instance)
       this._instance = new GameDecorator(Game);
@@ -33,8 +37,8 @@ export default class GameDecorator {
   }
 
   tick() {
-    this._usedCpu = Math.round(Game.cpu.getUsed());
     this.rooms.tick();
     this.creeps.tick();
+    this._usedCpu = Game.cpu.getUsed();
   }
 }

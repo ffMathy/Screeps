@@ -18,7 +18,9 @@ export default class HarvestCreepStrategy implements CreepStrategy {
     let reservedSource: Source = null;
     if(reservedId) {
       reservedSource = sources.filter(x => x.id === reservedId)[0];
-    } else {
+    }
+
+    if(!reservedSource) {
       for (let source of sources) {
         if(!GameDecorator.instance.resources.reserve(creep, source.id))
           continue;
