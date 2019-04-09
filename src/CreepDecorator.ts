@@ -1,7 +1,6 @@
-import rooms from 'rooms';
 import RoomDecorator from 'RoomDecorator';
 import StrategyPickingCreepStrategy from 'strategies/StrategyPickingCreepStrategy';
-import creeps from 'creeps';
+import GameDecorator from 'GameDecorator';
 
 export interface CreepMemory {
   reservationId: string;
@@ -22,10 +21,24 @@ export default class CreepDecorator {
     return this.creep.memory;
   }
 
-  constructor(public creep: Creep) {
-    this.room = rooms.getCreepRoom(creep);
-
+  constructor(
+    private readonly game: GameDecorator,
+    public creep: Creep)
+  {
+    this.room = game.rooms.fromCreep(creep);
     this.strategy = new StrategyPickingCreepStrategy();
+  }
+
+  moveTo(target: RoomPosition | { pos: RoomPosition; }, opts?: MoveToOpts) {
+    if(!opts)
+      opts = {};
+
+    opts.visualizePathStyle = { stroke: '#ffffff' };
+
+    let game = GameDecorator.instance;
+    opts.reusePath = game.usedCpu < game.availableCpu / 1.25 ? 25 : 1;
+
+    this.creep.moveTo(target, opts);
   }
 
   setStrategy(strategy: CreepStrategy) {
@@ -35,9 +48,9 @@ export default class CreepDecorator {
   tick() {
     if(this.creep)
       this.creep = Game.creeps[this.creep.name];
-      
+
     if(!this.creep || this.creep.ticksToLive <= 3) {
-      creeps.all.splice(creeps.all.indexOf(this), 1);
+      this.game.creeps.all.splice(this.game.creeps.all.indexOf(this), 1);
       return;
     }
 

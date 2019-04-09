@@ -13,7 +13,7 @@ export default class BuildingCreepStrategy implements CreepStrategy {
     var targets = creep.room.constructionSites;
     if (targets.length > 0) {
       if (creep.creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-        creep.creep.moveTo(targets[0], { visualizePathStyle: { stroke: '#ffffff' } });
+        creep.moveTo(targets[0]);
       }
     } else {
       return creep.setStrategy(new StrategyPickingCreepStrategy());

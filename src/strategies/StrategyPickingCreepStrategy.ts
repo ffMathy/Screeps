@@ -3,8 +3,8 @@ import BuildingCreepStrategy from "./BuildingCreepStrategy";
 import HarvestCreepStrategy from "./HarvestCreepStrategy";
 import TransferCreepStrategy from "./TransferCreepStrategy";
 import UpgradeCreepStrategy from "./UpgradeCreepStrategy";
-import Resources from "Resources";
 import ParkingCreepStrategy from "./ParkingCreepStrategy";
+import GameDecorator from "GameDecorator";
 
 export default class StrategyPickingCreepStrategy implements CreepStrategy {
   get name() {
@@ -17,11 +17,14 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
 
     let isFull = energyCarry === carryCapacity;
     let isEmpty = energyCarry == 0;
-    let availableSources = creep.room.sources.filter(x => !Resources.instance.isReserved(x.id));
+    let availableSources = creep.room.sources.filter(x => !GameDecorator.instance.resources.isReserved(x.id));
     if(!isFull && availableSources.length > 0)
       return creep.setStrategy(new HarvestCreepStrategy());
 
     if(!isEmpty) {
+      if(creep.room.room.controller.ticksToDowngrade < 1000)
+        return creep.setStrategy(new UpgradeCreepStrategy());
+
       let availableConstructionSites = creep.room.constructionSites;
       if(availableConstructionSites.length > 0)
         return creep.setStrategy(new BuildingCreepStrategy());
