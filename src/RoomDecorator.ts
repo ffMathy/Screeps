@@ -10,6 +10,13 @@ export default class RoomDecorator {
     private _neighbouringRoomsByDirection: {[direction: string]: RoomDecorator};
     private _allNeighbouringRooms: RoomDecorator[];
 
+    private _unexploredNeighbourNameOffset: number;
+    private _unexploredNeighbourNames: string[];
+
+    public get unexploredNeighbourNames() {
+      return this._unexploredNeighbourNames;
+    }
+
     public get neighbours() {
       return this._allNeighbouringRooms;
     }
@@ -27,6 +34,8 @@ export default class RoomDecorator {
       private readonly rooms: RoomsDecorator,
       private readonly roomName: string)
     {
+      this._unexploredNeighbourNameOffset = 0;
+      this._unexploredNeighbourNames = [];
       this._neighbouringRoomsByDirection = {};
       this._allNeighbouringRooms = [];
 
@@ -35,6 +44,13 @@ export default class RoomDecorator {
       this.spawns = this.isClaimed ? this.room
         .find(FIND_MY_SPAWNS)
         .map((x: Spawn) => new SpawnDecorator(game, this, x)) : [];
+    }
+
+    getRandomUnexploredNeighbourName() {
+      if(this._unexploredNeighbourNames.length === 0)
+        return null;
+
+      return this._unexploredNeighbourNames[this._unexploredNeighbourNameOffset++ % this._unexploredNeighbourNames.length];
     }
 
     detectNeighbours() {
@@ -50,6 +66,9 @@ export default class RoomDecorator {
 
           this._neighbouringRoomsByDirection[direction] = decorator;
           this._allNeighbouringRooms.push(decorator);
+
+          if(!decorator.isClaimed)
+            this._unexploredNeighbourNames.push(roomName);
         }
       }
     }

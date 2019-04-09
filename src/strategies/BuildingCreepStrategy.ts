@@ -10,10 +10,14 @@ export default class BuildingCreepStrategy implements CreepStrategy {
     if(creep.creep.carry.energy == 0)
       return creep.setStrategy(new StrategyPickingCreepStrategy());
 
-    var targets = creep.room.constructionSites;
-    if (targets.length > 0) {
-      if (creep.creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(targets[0]);
+    var target = creep.room.constructionSites[0];
+    if (target) {
+      if (creep.creep.build(target) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(target);
+      } else {
+        target = Game.getObjectById(target.id);
+        if(target.progress >= target.progressTotal)
+          console.log('construction completed');
       }
     } else {
       return creep.setStrategy(new StrategyPickingCreepStrategy());

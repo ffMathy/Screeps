@@ -4,7 +4,7 @@ import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
 export default class ParkingCreepStrategy implements CreepStrategy {
   private _tickCount: number;
 
-  private readonly _parkPosition = { x: 10, y: 10 };
+  private readonly _parkPosition = { x: 25, y: 25 };
 
   get name() {
     return "park";

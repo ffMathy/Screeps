@@ -13,7 +13,7 @@ export interface CreepStrategy {
 }
 
 export default class CreepDecorator {
-  public readonly room: RoomDecorator;
+  public room: RoomDecorator;
 
   private strategy: CreepStrategy;
 
@@ -38,11 +38,15 @@ export default class CreepDecorator {
     let game = GameDecorator.instance;
     opts.reusePath = game.usedCpu < game.availableCpu / 1.25 ? 25 : 1;
 
-    this.creep.moveTo(target, opts);
+    return this.creep.moveTo(target, opts);
   }
 
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
+  }
+
+  updateRoom() {
+    this.room = this.game.rooms.fromCreep(this.creep);
   }
 
   tick() {
