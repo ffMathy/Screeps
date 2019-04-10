@@ -12,9 +12,11 @@ export default class RoomsDecorator {
   constructor(private game: GameDecorator) {
     this.byName = {};
     this.all = [];
+  }
 
-    for (let key in game.game.rooms) {
-      let room = game.game.rooms[key];
+  initialize() {
+    for (let key in this.game.game.rooms) {
+      let room = this.game.game.rooms[key];
       this.detectRoom(room.name);
     }
 

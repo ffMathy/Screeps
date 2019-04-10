@@ -9,10 +9,12 @@ interface Resource {
 export default class Resources {
   private resources: {[id: string]: Resource} = {};
 
-  constructor(rooms: RoomsDecorator) {
+  constructor(private readonly rooms: RoomsDecorator) {
     this.resources = {};
+  }
 
-    for(let room of rooms.all)
+  initialize() {
+    for(let room of this.rooms.all)
     for(let source of room.sources) {
       let resource = {} as Resource;
       resource.reservationCount = 0;

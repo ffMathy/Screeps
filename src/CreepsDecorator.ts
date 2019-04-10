@@ -4,12 +4,14 @@ import GameDecorator from 'GameDecorator';
 export default class CreepsDecorator {
   public all: CreepDecorator[];
 
-  constructor(game: GameDecorator) {
+  constructor(private readonly game: GameDecorator) {
     this.all = [];
+  }
 
-    for (let creepName in game.game.creeps) {
-      let creep = game.game.creeps[creepName];
-      this.all.push(new CreepDecorator(game, creep));
+  initialize() {
+    for (let creepName in this.game.game.creeps) {
+      let creep = this.game.game.creeps[creepName];
+      this.all.push(new CreepDecorator(this.game, creep));
     }
   }
 

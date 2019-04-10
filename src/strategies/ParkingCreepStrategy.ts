@@ -3,7 +3,7 @@ import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
 
 export default class ParkingCreepStrategy implements CreepStrategy {
   private readonly _parkPosition = { x: 25, y: 25 };
-  
+
   private _lastPosition: RoomPosition = null;
   private _impedimentCount: number;
 
@@ -32,6 +32,6 @@ export default class ParkingCreepStrategy implements CreepStrategy {
     }
 
     this._lastPosition = creep.creep.pos;
-    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, targetRoomName), { ignoreCreeps: true });
+    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, targetRoomName));
   }
 }

@@ -29,9 +29,13 @@ export default class GameDecorator {
   }
 
   constructor(public readonly game: Game) {
-    this.rooms = new RoomsDecorator(this);
     this.creeps = new CreepsDecorator(this);
+    this.rooms = new RoomsDecorator(this);
     this.resources = new Resources(this.rooms);
+
+    this.creeps.initialize();
+    this.rooms.initialize();
+    this.resources.initialize();
 
     this.availableCpu = game.cpu.limit;
   }
