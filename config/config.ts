@@ -10,9 +10,13 @@ function webpackConfig(options: EnvOptions = {}): Config {
   // get the common configuration to start with
   const config = CommonConfig.init(options);
 
-  config.plugin("screeps")
+  config.plugin("screepsPrivate")
     .use(ScreepsWebpackPlugin, [
-      require("./credentials.private.json"),
+      require("./credentials.private.json")
+    ]);
+
+  config.plugin("screepsPublic")
+    .use(ScreepsWebpackPlugin, [
       require("./credentials.public.json")
     ]);
 
