@@ -1,7 +1,6 @@
 import CreepDecorator from 'CreepDecorator';
 import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
-import ParkingCreepStrategy from 'strategies/ParkingCreepStrategy';
 
 export default class SpawnDecorator {
     private readonly spawnName: string;

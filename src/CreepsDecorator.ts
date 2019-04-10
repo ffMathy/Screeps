@@ -11,7 +11,7 @@ export default class CreepsDecorator {
   initialize() {
     for (let creepName in this.game.game.creeps) {
       let creep = this.game.game.creeps[creepName];
-      this.all.push(new CreepDecorator(this.game, creep));
+      this.add(new CreepDecorator(this.game, creep));
     }
   }
 
