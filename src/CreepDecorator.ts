@@ -65,6 +65,10 @@ export default class CreepDecorator {
       return;
     }
 
+    if(this.creep.room.name !== oldCreep.room.name) {
+      this.updateRoom();
+    }
+
     let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
     if(strategyTickDifference < 10)
       this.creep.say(this.strategy.name, true);
