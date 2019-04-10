@@ -5,7 +5,7 @@ export default class ParkingCreepStrategy implements CreepStrategy {
   private readonly _parkPosition = { x: 25, y: 25 };
 
   get name() {
-    return "park";
+    return "park" + (this.targetRoomName ? (' ' + this.targetRoomName) : '');
   }
 
   constructor(
@@ -13,10 +13,11 @@ export default class ParkingCreepStrategy implements CreepStrategy {
   }
 
   tick(creep: CreepDecorator) {
-    if((Game.time % 15 === 0)) {
+    let targetRoomName = this.targetRoomName || creep.creep.room.name;
+    if(creep.creep.room.name === targetRoomName && creep.creep.pos.x === this._parkPosition.x && creep.creep.pos.y === this._parkPosition.y) {
         return creep.setStrategy(new StrategyPickingCreepStrategy());
     }
 
-    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, this.targetRoomName || creep.creep.room.name), { range: 2, ignoreCreeps: true });
+    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, targetRoomName), { ignoreCreeps: true });
   }
 }

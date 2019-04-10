@@ -21,7 +21,7 @@ export default class ClaimCreepStrategy implements CreepStrategy {
       if(claimResult === ERR_NOT_IN_RANGE) {
         creep.moveTo(controller);
       } else {
-        console.log('claim result', claimResult);
+        this.previousRoom.detectNeighbours();
         creep.setStrategy(new StrategyPickingCreepStrategy());
       }
     }

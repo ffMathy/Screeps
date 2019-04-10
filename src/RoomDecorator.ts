@@ -64,6 +64,10 @@ export default class RoomDecorator {
       if(!this.isClaimed)
         return;
 
+      this._neighbouringRoomsByDirection = {};
+      this._allNeighbouringRooms.splice(0);
+      this._unexploredNeighbourNames.splice(0);
+
       let exits = this.game.game.map.describeExits(this.room.name);
       for(let direction in exits) {
         let roomName = exits[direction];
