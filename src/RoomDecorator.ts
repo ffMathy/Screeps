@@ -8,8 +8,9 @@ export default class RoomDecorator {
     public sources: Source[];
     public constructionSites: ConstructionSite[];
     public spawns: SpawnDecorator[];
-
     public creeps: CreepDecorator[];
+
+    private _lastControllerLevel: number;
 
     private _neighbouringRoomsByDirection: {[direction: string]: RoomDecorator};
     private _allNeighbouringRooms: RoomDecorator[];
@@ -146,8 +147,75 @@ export default class RoomDecorator {
       });
     }
 
+    private spiral(n) {
+      var r = Math.floor((Math.sqrt(n + 1) - 1) / 2) + 1;
+      var p = (8 * r * (r - 1)) / 2;
+      var en = r * 2;
+      var a = (1 + n - p) % (r * 8);
+
+      var pos = [0, 0, r];
+      switch (Math.floor(a / (r * 2))) {
+          case 0:
+              {
+                  pos[0] = a - r;
+                  pos[1] = -r;
+              }
+              break;
+          case 1:
+              {
+                  pos[0] = r;
+                  pos[1] = (a % en) - r;
+
+              }
+              break;
+          case 2:
+              {
+                  pos[0] = r - (a % en);
+                  pos[1] = r;
+              }
+              break;
+          case 3:
+              {
+                  pos[0] = -r;
+                  pos[1] = r - (a % en);
+              }
+              break;
+      }
+      return { x: pos[0], y: pos[1] };
+  }
+
+    private constructStructures() {
+      this._lastControllerLevel = this.room.controller.level;
+
+      let typesToBuild = [STRUCTURE_EXTENSION];
+      for(let typeToBuild of typesToBuild) {
+        const existingStructures = this.room.find(FIND_STRUCTURES, {
+          filter: s => s.structureType === typeToBuild
+        });
+
+        let totalAvailable = 0;
+        outer: for(let type in CONTROLLER_STRUCTURES) {
+          for(let level in CONTROLLER_STRUCTURES[type]) {
+            if(+level > this.room.controller.level)
+              break outer;
+
+            totalAvailable += +CONTROLLER_STRUCTURES[type][level];
+          }
+        }
+
+        let countBuilt = existingStructures.length;
+        while(countBuilt < totalAvailable) {
+          let offset = countBuilt;
+        }
+      }
+    }
+
     tick() {
       if(this.room && this.room.controller) {
+        if(this.room.controller.level !== this._lastControllerLevel) {
+          this.constructStructures();
+        }
+
         if(this.isPopulationMaintained) {
           Arrays.add(this.rooms.lowPopulation, this);
           this.sayAt(this.room.controller, '😃');
