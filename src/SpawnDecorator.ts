@@ -76,7 +76,7 @@ export default class SpawnDecorator {
         }
 
         if(this._isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
-            this.spawnCreep([CLAIM]);
+            this.spawnCreep([CLAIM, MOVE, CARRY, WORK]);
         }
     }
 
