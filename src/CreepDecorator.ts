@@ -51,7 +51,9 @@ export default class CreepDecorator {
   }
 
   updateRoom() {
+    this.room.creeps.splice(this.room.creeps.indexOf(this), 1);
     this.room = this.game.rooms.fromCreep(this.creep);
+    this.room.creeps.push(this);
   }
 
   tick() {

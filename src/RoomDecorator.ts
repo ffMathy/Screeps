@@ -1,11 +1,14 @@
 import SpawnDecorator from "SpawnDecorator";
 import GameDecorator from "GameDecorator";
 import RoomsDecorator from "RoomsDecorator";
+import CreepDecorator from "CreepDecorator";
 
 export default class RoomDecorator {
     public sources: Source[];
     public constructionSites: ConstructionSite[];
     public spawns: SpawnDecorator[];
+
+    public creeps: CreepDecorator[];
 
     private _neighbouringRoomsByDirection: {[direction: string]: RoomDecorator};
     private _allNeighbouringRooms: RoomDecorator[];
@@ -34,6 +37,12 @@ export default class RoomDecorator {
       private readonly rooms: RoomsDecorator,
       private readonly roomName: string)
     {
+      this.creeps = [];
+      for(let creep of game.creeps.all) {
+        if(creep.creep.room.name === roomName)
+          this.creeps.push(creep);
+      }
+
       this._unexploredNeighbourNameOffset = 0;
       this._unexploredNeighbourNames = [];
       this._neighbouringRoomsByDirection = {};
