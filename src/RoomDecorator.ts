@@ -3,12 +3,14 @@ import GameDecorator from "GameDecorator";
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
 import Arrays from "helpers/Arrays";
+import TerrainDecorator from "TerrainDecorator";
 
 export default class RoomDecorator {
     public sources: Source[];
     public constructionSites: ConstructionSite[];
     public spawns: SpawnDecorator[];
     public creeps: CreepDecorator[];
+    public terrain: TerrainDecorator;
 
     private _lastControllerLevel: number;
 
@@ -19,10 +21,6 @@ export default class RoomDecorator {
     private _unexploredNeighbourNames: string[];
 
     private _isPopulationMaintained: boolean;
-
-    private _terrain: {
-      get(x: number, y: number): number
-    };
 
     public get isPopulationMaintained() {
         return this._isPopulationMaintained;
@@ -49,8 +47,9 @@ export default class RoomDecorator {
       private readonly rooms: RoomsDecorator,
       public readonly roomName: string)
     {
-      this._isPopulationMaintained = false;
       this.creeps = [];
+
+      this._isPopulationMaintained = false;
 
       this._unexploredNeighbourNameOffset = 0;
       this._unexploredNeighbourNames = [];
@@ -62,8 +61,16 @@ export default class RoomDecorator {
         this._isPopulationMaintained = this.creeps.length >= 15;
     }
 
+    createConstructionSite(x: number, y: number, structureType: string): number {
+      let returnValue = this.room.createConstructionSite(x, y, structureType);
+      if(returnValue === 0)
+        this.refreshConstructionSites();
+
+      return returnValue;
+    }
+
     initialize() {
-      this._terrain = (this.game.game.map as any).getRoomTerrain(this.roomName);
+      this.terrain = new TerrainDecorator(this, (this.game.game.map as any).getRoomTerrain(this.roomName));
 
       for(let creep of this.game.creeps.all) {
         if(creep.creep.room.name === this.roomName)
@@ -93,8 +100,13 @@ export default class RoomDecorator {
       }
     }
 
-    refresh() {
+    private refreshConstructionSites() {
       this.constructionSites = this.isClaimed ? this.room.find(FIND_CONSTRUCTION_SITES) : [];
+    }
+
+    refresh() {
+      this.refreshConstructionSites();
+
       this.spawns = this.isClaimed ? this.room
         .find(FIND_MY_SPAWNS)
         .map((x: Spawn) => new SpawnDecorator(this.game, this, x)) : [];
@@ -141,7 +153,8 @@ export default class RoomDecorator {
         { align: 'left', opacity: 1 });
     }
 
-    getTransferrableStructures(): Structure[] {
+    //TODO: optimize this
+    getTransferrableStructures(): (Structure|Spawn)[] {
       if(!this.room)
         return [];
 
@@ -194,7 +207,7 @@ export default class RoomDecorator {
     private constructStructures() {
       this._lastControllerLevel = this.room.controller.level;
 
-      let structures = (this.room.find(FIND_STRUCTURES) as Structure[]).filter(x => x.structureType !== STRUCTURE_SPAWN);
+      let structures = (this.room.find(FIND_STRUCTURES) as Structure[]).filter(x => x.structureType !== STRUCTURE_SPAWN && x.structureType !== STRUCTURE_ROAD);
 
       let typesToBuild = [STRUCTURE_EXTENSION];
       for(let typeToBuild of typesToBuild) {
@@ -221,7 +234,7 @@ export default class RoomDecorator {
 
           offset += 2;
 
-          let terrain = this._terrain.get(position.x, position.y);
+          let terrain = this.terrain.getModifier(position.x, position.y);
           if(terrain === TERRAIN_MASK_WALL)
             continue;
 
@@ -230,12 +243,13 @@ export default class RoomDecorator {
             console.log('built', this.roomName, currentOffset, position.x, position.y);
 
             countBuilt++;
-            this.refresh();
           } else {
             console.log('build error', buildResult);
           }
         }
       }
+
+      this.refresh();
     }
 
     tick() {

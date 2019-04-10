@@ -28,7 +28,7 @@ export default class GameDecorator {
     return this._usedCpu;
   }
 
-  constructor(public readonly game: Game) {
+  constructor(public game: Game) {
     this.creeps = new CreepsDecorator(this);
     this.rooms = new RoomsDecorator(this);
     this.resources = new Resources(this.rooms);
@@ -41,6 +41,8 @@ export default class GameDecorator {
   }
 
   tick() {
+    this.game = Game;
+
     this.rooms.tick();
     this.creeps.tick();
     this._usedCpu = Game.cpu.getUsed();

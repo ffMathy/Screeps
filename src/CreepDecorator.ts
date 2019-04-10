@@ -17,6 +17,7 @@ export default class CreepDecorator {
 
   private strategy: CreepStrategy;
   private lastStrategyTick: number;
+  private lastPosition: RoomPosition;
 
   public get memory(): CreepMemory {
     return this.creep.memory;
@@ -26,9 +27,6 @@ export default class CreepDecorator {
     private readonly game: GameDecorator,
     public creep: Creep)
   {
-    for(let key in creep.memory)
-      delete creep.memory[key];
-
     this.room = game.rooms.fromCreep(creep);
     this.strategy = new StrategyPickingCreepStrategy();
   }
@@ -71,9 +69,15 @@ export default class CreepDecorator {
       this.updateRoom();
     }
 
+    if(!this.lastPosition)
+      this.lastPosition = this.creep.pos;
+
     let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
     if(strategyTickDifference < 10)
       this.creep.say(this.strategy.name, true);
+
+    if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
+      this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
 
     this.strategy.tick(this);
   }
