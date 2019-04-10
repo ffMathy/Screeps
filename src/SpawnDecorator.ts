@@ -69,7 +69,7 @@ export default class SpawnDecorator {
             return;
 
         if(this._isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
-            this.spawnCreep([CLAIM, MOVE, CARRY, WORK]);
+            this.spawnCreep([CLAIM, MOVE]);
         } else if(this.game.creeps.all.length < count) {
             this._isPopulationMaintained = false;
             this.spawnCreep(qualities);

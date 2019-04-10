@@ -21,6 +21,6 @@ export default class ParkingCreepStrategy implements CreepStrategy {
         return creep.setStrategy(new StrategyPickingCreepStrategy());
     }
 
-    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, creep.room.room.name), { range: 2, ignoreCreeps: true });
+    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, creep.creep.room.name), { range: 2, ignoreCreeps: true });
   }
 }

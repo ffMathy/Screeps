@@ -16,6 +16,9 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
     let energyCarry = creep.creep.carry.energy;
     let carryCapacity = creep.creep.carryCapacity;
 
+    if(creep.room.unexploredNeighbourNames.length > 0 && creep.creep.body.find(x => x.type === CLAIM))
+      return creep.setStrategy(new ExploreCreepStrategy(creep.room.getRandomUnexploredNeighbourName()));
+
     let isFull = energyCarry === carryCapacity;
     let isEmpty = energyCarry == 0;
     let availableSources = creep.room.sources.filter(x => !GameDecorator.instance.resources.isReserved(x.id));
@@ -25,9 +28,6 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
     if(!isEmpty) {
       if(creep.room.room && creep.room.room.controller.ticksToDowngrade < 1000)
         return creep.setStrategy(new UpgradeCreepStrategy());
-
-      if(creep.room.unexploredNeighbourNames.length > 0 && creep.creep.body.find(x => x.type === CLAIM))
-        return creep.setStrategy(new ExploreCreepStrategy(creep.room.getRandomUnexploredNeighbourName()));
 
       let availableTransferSites = creep.room.getTransferrableStructures();
       if(availableTransferSites.length > 0)

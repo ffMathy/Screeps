@@ -13,15 +13,15 @@ export default class ClaimCreepStrategy implements CreepStrategy {
   }
 
   tick(creep: CreepDecorator) {
-    creep.moveTo(new RoomPosition(25, 25, this.targetRoomName), { range: 10, ignoreCreeps: true });
-
     let controller = creep.creep.room.controller;
     if(!controller) {
       this.previousRoom.unexploredNeighbourNames.splice(this.previousRoom.unexploredNeighbourNames.indexOf(this.targetRoomName), 1);
     } else {
-      if(creep.creep.claimController(controller) === ERR_NOT_IN_RANGE) {
+      let claimResult = creep.creep.claimController(controller);
+      if(claimResult === ERR_NOT_IN_RANGE) {
         creep.moveTo(controller);
       } else {
+        console.log('claim result', claimResult);
         creep.setStrategy(new StrategyPickingCreepStrategy());
       }
     }
