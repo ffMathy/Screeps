@@ -20,6 +20,10 @@ export default class RoomDecorator {
 
     private _isPopulationMaintained: boolean;
 
+    private _terrain: {
+      get(x: number, y: number): number
+    };
+
     public get isPopulationMaintained() {
         return this._isPopulationMaintained;
     }
@@ -59,10 +63,14 @@ export default class RoomDecorator {
     }
 
     initialize() {
+      this._terrain = (this.game.game.map as any).getRoomTerrain(this.roomName);
+
       for(let creep of this.game.creeps.all) {
         if(creep.creep.room.name === this.roomName)
           this.addCreep(creep);
       }
+
+      this.sources = this.isClaimed ? this.room.find(FIND_SOURCES) : [];
 
       this.refresh();
 
@@ -86,7 +94,6 @@ export default class RoomDecorator {
     }
 
     refresh() {
-      this.sources = this.isClaimed ? this.room.find(FIND_SOURCES) : [];
       this.constructionSites = this.isClaimed ? this.room.find(FIND_CONSTRUCTION_SITES) : [];
       this.spawns = this.isClaimed ? this.room
         .find(FIND_MY_SPAWNS)
@@ -187,25 +194,46 @@ export default class RoomDecorator {
     private constructStructures() {
       this._lastControllerLevel = this.room.controller.level;
 
+      let structures = (this.room.find(FIND_STRUCTURES) as Structure[]).filter(x => x.structureType !== STRUCTURE_SPAWN);
+
       let typesToBuild = [STRUCTURE_EXTENSION];
       for(let typeToBuild of typesToBuild) {
-        const existingStructures = this.room.find(FIND_STRUCTURES, {
-          filter: s => s.structureType === typeToBuild
-        });
+        const structuresOfType = structures.filter(s => s.structureType === typeToBuild);
+        const constructionSitesOfType = this.constructionSites.filter(x => x.structureType === typeToBuild);
 
         let totalAvailable = 0;
-        outer: for(let type in CONTROLLER_STRUCTURES) {
-          for(let level in CONTROLLER_STRUCTURES[type]) {
-            if(+level > this.room.controller.level)
-              break outer;
+        for(let level in CONTROLLER_STRUCTURES[typeToBuild]) {
+          if(+level > this.room.controller.level)
+            break;
 
-            totalAvailable += +CONTROLLER_STRUCTURES[type][level];
-          }
+          totalAvailable += +CONTROLLER_STRUCTURES[typeToBuild][level];
         }
 
-        let countBuilt = existingStructures.length;
+        let countBuilt = structuresOfType.length + constructionSitesOfType.length;
+        console.log('building', this.roomName, countBuilt, totalAvailable);
+
+        let offset = structures.length;
         while(countBuilt < totalAvailable) {
-          let offset = countBuilt;
+          let currentOffset = offset;
+          let position = this.spiral(currentOffset);
+          position.x += this.room.controller.pos.x;
+          position.y += this.room.controller.pos.y;
+
+          offset += 2;
+
+          let terrain = this._terrain.get(position.x, position.y);
+          if(terrain === TERRAIN_MASK_WALL)
+            continue;
+
+          let buildResult = this.room.createConstructionSite(position.x, position.y, typeToBuild);
+          if(buildResult === 0) {
+            console.log('built', this.roomName, currentOffset, position.x, position.y);
+
+            countBuilt++;
+            this.refresh();
+          } else {
+            console.log('build error', buildResult);
+          }
         }
       }
     }
