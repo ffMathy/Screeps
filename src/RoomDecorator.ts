@@ -16,6 +16,12 @@ export default class RoomDecorator {
     private _unexploredNeighbourNameOffset: number;
     private _unexploredNeighbourNames: string[];
 
+    private _isPopulationMaintained: boolean;
+
+    public get isPopulationMaintained() {
+        return this._isPopulationMaintained;
+    }
+
     public get unexploredNeighbourNames() {
       return this._unexploredNeighbourNames;
     }
@@ -37,18 +43,38 @@ export default class RoomDecorator {
       private readonly rooms: RoomsDecorator,
       private readonly roomName: string)
     {
+      this._isPopulationMaintained = false;
       this.creeps = [];
-      for(let creep of game.creeps.all) {
-        if(creep.creep.room.name === roomName)
-          this.creeps.push(creep);
-      }
 
       this._unexploredNeighbourNameOffset = 0;
       this._unexploredNeighbourNames = [];
       this._neighbouringRoomsByDirection = {};
       this._allNeighbouringRooms = [];
+    }
+
+    private refreshPopulationMaintenanceStatus() {
+        this._isPopulationMaintained = this.creeps.length >= 10;
+    }
+
+    initialize() {
+      for(let creep of this.game.creeps.all) {
+        if(creep.creep.room.name === this.roomName)
+          this.addCreep(creep);
+      }
 
       this.refresh();
+    }
+
+    addCreep(creep: CreepDecorator) {
+      console.log('add creep', creep.creep.name, this.roomName);
+
+      this.creeps.push(creep);
+      this.refreshPopulationMaintenanceStatus();
+    }
+
+    removeCreep(creep: CreepDecorator) {
+      this.creeps.splice(this.creeps.indexOf(creep), 1);
+      this.refreshPopulationMaintenanceStatus();
     }
 
     refresh() {
@@ -60,6 +86,8 @@ export default class RoomDecorator {
 
       if(this.spawns.length === 0)
         this.spawns.push(new SpawnDecorator(this.game, this, null));
+
+      this.refreshPopulationMaintenanceStatus();
     }
 
     getRandomUnexploredNeighbourName() {
@@ -98,7 +126,7 @@ export default class RoomDecorator {
         text,
         object.pos.x + 1,
         object.pos.y,
-        { align: 'left', opacity: 0.8 });
+        { align: 'left', opacity: 1 });
     }
 
     getTransferrableStructures(): Structure[] {
@@ -115,6 +143,14 @@ export default class RoomDecorator {
     }
 
     tick() {
+      if(this.room && this.room.controller) {
+        if(this.isPopulationMaintained) {
+            this.sayAt(this.room.controller, '😃');
+        } else {
+            this.sayAt(this.room.controller, '😟');
+        }
+      }
+
       for(let spawn of this.spawns)
         spawn.tick();
     }

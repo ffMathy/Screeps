@@ -27,8 +27,16 @@ export default class ParkingCreepStrategy implements CreepStrategy {
       this._impedimentCount = 0;
     }
 
-    if(this._impedimentCount > 5 || (creep.creep.room.name === targetRoomName && creep.creep.pos.x === this._parkPosition.x && creep.creep.pos.y === this._parkPosition.y)) {
+    if(creep.creep.room.name === targetRoomName && creep.creep.pos.x === this._parkPosition.x && creep.creep.pos.y === this._parkPosition.y) {
         return creep.setStrategy(new StrategyPickingCreepStrategy());
+    }
+
+    if(this._impedimentCount > 5) {
+      let neighbourWithLowPopulation = creep.room.neighbours.find(x => x.room && !x.isPopulationMaintained);
+      if(neighbourWithLowPopulation)
+        return creep.setStrategy(new ParkingCreepStrategy(neighbourWithLowPopulation.room.name));
+
+      return creep.setStrategy(new StrategyPickingCreepStrategy());
     }
 
     this._lastPosition = creep.creep.pos;

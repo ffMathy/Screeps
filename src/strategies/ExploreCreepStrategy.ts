@@ -29,7 +29,7 @@ export default class ExploreCreepStrategy implements CreepStrategy {
       return creep.setStrategy(new ParkingCreepStrategy());
 
     if(this.fromRoomName !== creep.creep.room.name) {
-      creep.updateRoom();
+      creep.moveTo(creep.creep.room.controller);
       creep.setStrategy(new ClaimCreepStrategy(
         this.fromRoom,
         creep.creep.room.name));

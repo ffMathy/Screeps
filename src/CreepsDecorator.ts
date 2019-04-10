@@ -15,6 +15,11 @@ export default class CreepsDecorator {
     }
   }
 
+  remove(creep: CreepDecorator) {
+    this.all.splice(this.all.indexOf(creep), 1);
+    creep.room.removeCreep(creep);
+  }
+
   tick() {
     for (let creep of this.all) {
       creep.tick();

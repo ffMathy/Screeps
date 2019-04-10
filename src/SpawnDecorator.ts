@@ -4,18 +4,21 @@ import RoomDecorator from 'RoomDecorator';
 import ParkingCreepStrategy from 'strategies/ParkingCreepStrategy';
 
 export default class SpawnDecorator {
-    private _isPopulationMaintained: boolean;
-
-    public get isPopulationMaintained() {
-        return this._isPopulationMaintained;
-    }
+    private readonly spawnName: string;
 
     constructor(
         private readonly game: GameDecorator,
         public readonly room: RoomDecorator,
         private readonly spawn: Spawn)
     {
-        this._isPopulationMaintained = false;
+        if(this.spawn === null) {
+            for(let key in Game.spawns) {
+                this.spawnName = key;
+                break;
+            }
+        } else {
+            this.spawnName = this.spawn.name;
+        }
     }
 
     getTimeUntilSpawn() {
@@ -45,18 +48,8 @@ export default class SpawnDecorator {
         if(this.getSpawnDetails())
             return;
 
-        let spawnName;
-        if(this.spawn === null) {
-            for(let key in Game.spawns) {
-                spawnName = key;
-                break;
-            }
-        } else {
-            spawnName = this.spawn.name;
-        }
-
         let creepName = 'creep-' + Game.time;
-        let spawnResult = Game.spawns[spawnName].spawnCreep(
+        let spawnResult = Game.spawns[this.spawnName].spawnCreep(
             qualities,
             creepName,
             {
@@ -76,24 +69,24 @@ export default class SpawnDecorator {
                 creepDecorator.setStrategy(new ParkingCreepStrategy(this.room.room.name));
 
             this.game.creeps.all.push(creepDecorator);
+            this.room.addCreep(creepDecorator);
 
-            creepDecorator.room.sayAt(Game.spawns[spawnName], '🛠️');
+            this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
         }
     }
 
-    maintainPopulation(qualities, count) {
+    maintainPopulation(qualities) {
         if(this.getSpawnDetails())
             return;
 
-        this._isPopulationMaintained = this.room.creeps.length >= count;
-        if(this._isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
+        if(this.room.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
             this.spawnCreep([CLAIM, MOVE]);
-        } else if(!this._isPopulationMaintained) {
+        } else if(!this.room.isPopulationMaintained) {
             this.spawnCreep(qualities);
         }
     }
 
     tick() {
-        this.maintainPopulation([MOVE, CARRY, WORK], 15);
+        this.maintainPopulation([MOVE, CARRY, WORK]);
     }
 };

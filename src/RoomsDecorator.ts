@@ -32,6 +32,8 @@ export default class RoomsDecorator {
     this.all.push(roomDecorator);
     this.byName[roomName] = roomDecorator;
 
+    roomDecorator.initialize();
+
     return roomDecorator;
   }
 

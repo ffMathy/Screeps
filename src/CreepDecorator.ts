@@ -51,9 +51,9 @@ export default class CreepDecorator {
   }
 
   updateRoom() {
-    this.room.creeps.splice(this.room.creeps.indexOf(this), 1);
+    this.room.removeCreep(this);
     this.room = this.game.rooms.fromCreep(this.creep);
-    this.room.creeps.push(this);
+    this.room.addCreep(this);
   }
 
   tick() {
@@ -63,7 +63,7 @@ export default class CreepDecorator {
 
     if(!this.creep || oldCreep.ticksToLive <= 3) {
       this.game.resources.unreserve(oldCreep);
-      this.game.creeps.all.splice(this.game.creeps.all.indexOf(this), 1);
+      this.game.creeps.remove(this);
       return;
     }
 
