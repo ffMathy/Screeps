@@ -89,9 +89,6 @@ export default class RoomDecorator {
         .find(FIND_MY_SPAWNS)
         .map((x: Spawn) => new SpawnDecorator(this.game, this, x)) : [];
 
-      if(this.spawns.length === 0)
-        this.spawns.push(new SpawnDecorator(this.game, this, null));
-
       this.refreshPopulationMaintenanceStatus();
     }
 
