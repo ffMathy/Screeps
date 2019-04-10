@@ -16,8 +16,17 @@ export default class CreepsDecorator {
   }
 
   remove(creep: CreepDecorator) {
-    this.all.splice(this.all.indexOf(creep), 1);
+    if(this.all.indexOf(creep) > -1)
+      this.all.splice(this.all.indexOf(creep), 1);
+
     creep.room.removeCreep(creep);
+  }
+
+  add(creep: CreepDecorator) {
+    creep.room.addCreep(creep);
+
+    if(this.all.indexOf(creep) === -1)
+      this.all.push(creep);
   }
 
   tick() {

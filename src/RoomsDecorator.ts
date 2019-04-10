@@ -29,10 +29,10 @@ export default class RoomsDecorator {
       return this.byName[roomName];
 
     let roomDecorator = new RoomDecorator(this.game, this, roomName);
+    roomDecorator.initialize();
+
     this.all.push(roomDecorator);
     this.byName[roomName] = roomDecorator;
-
-    roomDecorator.initialize();
 
     return roomDecorator;
   }

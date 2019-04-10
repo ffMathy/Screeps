@@ -68,8 +68,7 @@ export default class SpawnDecorator {
             if(this.spawn === null)
                 creepDecorator.setStrategy(new ParkingCreepStrategy(this.room.room.name));
 
-            this.game.creeps.all.push(creepDecorator);
-            this.room.addCreep(creepDecorator);
+            this.game.creeps.add(creepDecorator);
 
             this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
         }

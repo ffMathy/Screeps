@@ -68,13 +68,18 @@ export default class RoomDecorator {
     addCreep(creep: CreepDecorator) {
       //console.log('add creep', creep.creep.name, this.roomName);
 
-      this.creeps.push(creep);
-      this.refreshPopulationMaintenanceStatus();
+      if(this.creeps.indexOf(creep) === -1) {
+        this.creeps.push(creep);
+
+        this.refreshPopulationMaintenanceStatus();
+      }
     }
 
     removeCreep(creep: CreepDecorator) {
-      this.creeps.splice(this.creeps.indexOf(creep), 1);
-      this.refreshPopulationMaintenanceStatus();
+      if(this.creeps.indexOf(creep) > -1) {
+        this.creeps.splice(this.creeps.indexOf(creep), 1);
+        this.refreshPopulationMaintenanceStatus();
+      }
     }
 
     refresh() {
@@ -143,6 +148,9 @@ export default class RoomDecorator {
     }
 
     tick() {
+      //TODO: remove because slow
+      this.refreshPopulationMaintenanceStatus();
+
       if(this.room && this.room.controller) {
         if(this.isPopulationMaintained) {
             this.sayAt(this.room.controller, '😃');
