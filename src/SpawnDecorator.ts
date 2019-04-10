@@ -1,6 +1,7 @@
 import CreepDecorator from 'CreepDecorator';
 import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
+import ParkingCreepStrategy from 'strategies/ParkingCreepStrategy';
 
 export default class SpawnDecorator {
     private _isPopulationMaintained: boolean;
@@ -34,6 +35,9 @@ export default class SpawnDecorator {
     }
 
     getSpawnDetails() {
+        if(!this.spawn)
+            return null;
+
         return Game.spawns[this.spawn.name].spawning;
     }
 
@@ -41,8 +45,18 @@ export default class SpawnDecorator {
         if(this.getSpawnDetails())
             return;
 
+        let spawnName;
+        if(this.spawn === null) {
+            for(let key in Game.spawns) {
+                spawnName = key;
+                break;
+            }
+        } else {
+            spawnName = this.spawn.name;
+        }
+
         let creepName = 'creep-' + Game.time;
-        let spawnResult = Game.spawns[this.spawn.name].spawnCreep(
+        let spawnResult = Game.spawns[spawnName].spawnCreep(
             qualities,
             creepName,
             {
@@ -58,9 +72,12 @@ export default class SpawnDecorator {
             }
 
             let creepDecorator = new CreepDecorator(this.game, creepSpawned);
+            if(this.spawn === null)
+                creepDecorator.setStrategy(new ParkingCreepStrategy(this.room.room.name));
+
             this.game.creeps.all.push(creepDecorator);
 
-            creepDecorator.room.sayAt(Game.spawns[this.spawn.name], '🛠️');
+            creepDecorator.room.sayAt(Game.spawns[spawnName], '🛠️');
         }
     }
 

@@ -2,25 +2,21 @@ import CreepDecorator, { CreepStrategy } from "CreepDecorator";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
 
 export default class ParkingCreepStrategy implements CreepStrategy {
-  private _tickCount: number;
-
   private readonly _parkPosition = { x: 25, y: 25 };
 
   get name() {
     return "park";
   }
 
-  constructor() {
-    this._tickCount = 0;
+  constructor(
+    private readonly targetRoomName?: string) {
   }
 
   tick(creep: CreepDecorator) {
-    this._tickCount++;
-
-    if((this._tickCount % 15 === 0)) {
+    if((Game.time % 15 === 0)) {
         return creep.setStrategy(new StrategyPickingCreepStrategy());
     }
 
-    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, creep.creep.room.name), { range: 2, ignoreCreeps: true });
+    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, this.targetRoomName || creep.creep.room.name), { range: 2, ignoreCreeps: true });
   }
 }
