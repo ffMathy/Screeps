@@ -53,7 +53,7 @@ export default class RoomDecorator {
     }
 
     private refreshPopulationMaintenanceStatus() {
-        this._isPopulationMaintained = this.creeps.length >= 10;
+        this._isPopulationMaintained = this.creeps.length >= 15;
     }
 
     initialize() {
@@ -66,7 +66,7 @@ export default class RoomDecorator {
     }
 
     addCreep(creep: CreepDecorator) {
-      console.log('add creep', creep.creep.name, this.roomName);
+      //console.log('add creep', creep.creep.name, this.roomName);
 
       this.creeps.push(creep);
       this.refreshPopulationMaintenanceStatus();
