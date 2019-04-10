@@ -2,6 +2,7 @@ import SpawnDecorator from "SpawnDecorator";
 import GameDecorator from "GameDecorator";
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
+import Arrays from "helpers/Arrays";
 
 export default class RoomDecorator {
     public sources: Source[];
@@ -41,7 +42,7 @@ export default class RoomDecorator {
     constructor(
       private readonly game: GameDecorator,
       private readonly rooms: RoomsDecorator,
-      private readonly roomName: string)
+      public readonly roomName: string)
     {
       this._isPopulationMaintained = false;
       this.creeps = [];
@@ -63,11 +64,12 @@ export default class RoomDecorator {
       }
 
       this.refresh();
+
+      if(!this.isPopulationMaintained)
+        Arrays.add(this.rooms.lowPopulation, this);
     }
 
     addCreep(creep: CreepDecorator) {
-      //console.log('add creep', creep.creep.name, this.roomName);
-
       if(this.creeps.indexOf(creep) === -1) {
         this.creeps.push(creep);
 
@@ -145,14 +147,13 @@ export default class RoomDecorator {
     }
 
     tick() {
-      //TODO: remove because slow
-      this.refreshPopulationMaintenanceStatus();
-
       if(this.room && this.room.controller) {
         if(this.isPopulationMaintained) {
-            this.sayAt(this.room.controller, '😃');
+          Arrays.add(this.rooms.lowPopulation, this);
+          this.sayAt(this.room.controller, '😃');
         } else {
-            this.sayAt(this.room.controller, '😟');
+          Arrays.remove(this.rooms.lowPopulation, this);
+          this.sayAt(this.room.controller, '😟');
         }
       }
 

@@ -4,6 +4,7 @@ import GameDecorator from "GameDecorator";
 export default class RoomsDecorator {
   public readonly byName: { [name: string]: RoomDecorator};
   public readonly all: RoomDecorator[];
+  public readonly lowPopulation: RoomDecorator[];
 
   public get rooms() {
     return this.game.game.rooms;
@@ -12,6 +13,7 @@ export default class RoomsDecorator {
   constructor(private game: GameDecorator) {
     this.byName = {};
     this.all = [];
+    this.lowPopulation = [];
   }
 
   initialize() {
