@@ -17,10 +17,10 @@ export default class ParkingCreepStrategy implements CreepStrategy {
   tick(creep: CreepDecorator) {
     this._tickCount++;
 
-    if((this._tickCount % 3 === 0)) {
+    if((this._tickCount % 15 === 0)) {
         return creep.setStrategy(new StrategyPickingCreepStrategy());
     }
 
-    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, creep.room.room.name), { range: 3 });
+    creep.moveTo(new RoomPosition(this._parkPosition.x, this._parkPosition.y, creep.room.room.name), { range: 2, ignoreCreeps: true });
   }
 }

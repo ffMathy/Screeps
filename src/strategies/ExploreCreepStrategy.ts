@@ -1,5 +1,6 @@
 import CreepDecorator, { CreepStrategy } from "CreepDecorator";
 import ParkingCreepStrategy from "./ParkingCreepStrategy";
+import ClaimCreepStrategy from "./ClaimCreepStrategy";
 
 export default class ExploreCreepStrategy implements CreepStrategy {
   private target: RoomPosition;
@@ -26,7 +27,7 @@ export default class ExploreCreepStrategy implements CreepStrategy {
     if(creep.creep.pos.x === this.target.x && creep.creep.pos.y === this.target.y) {
       if(this.fromRoomName !== creep.creep.room.name) {
         creep.updateRoom();
-        return creep.setStrategy(new ParkingCreepStrategy());
+        return creep.setStrategy(new ClaimCreepStrategy());
       }
     }
 

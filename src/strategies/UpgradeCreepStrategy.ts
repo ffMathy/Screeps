@@ -11,7 +11,7 @@ export default class UpgradeCreepStrategy implements CreepStrategy {
       return creep.setStrategy(new StrategyPickingCreepStrategy());
 
     if (creep.creep.upgradeController(creep.creep.room.controller) == ERR_NOT_IN_RANGE) {
-      creep.moveTo(creep.creep.room.controller);
+      creep.moveTo(creep.creep.room.controller, { ignoreCreeps: true });
     }
   }
 }

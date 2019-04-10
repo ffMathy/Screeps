@@ -74,6 +74,10 @@ export default class SpawnDecorator {
         } else {
             this._isPopulationMaintained = true;
         }
+
+        if(this._isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
+            this.spawnCreep([CLAIM]);
+        }
     }
 
     tick() {

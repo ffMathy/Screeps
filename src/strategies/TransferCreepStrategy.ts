@@ -14,7 +14,7 @@ export default class TransferCreepStrategy implements CreepStrategy {
     if (targets.length > 0) {
       var transferResult = creep.creep.transfer(targets[0], RESOURCE_ENERGY);
       if (transferResult === ERR_NOT_IN_RANGE) {
-        creep.moveTo(targets[0]);
+        creep.moveTo(targets[0], {ignoreCreeps: true});
       }
     } else {
       creep.setStrategy(new StrategyPickingCreepStrategy());
