@@ -25,10 +25,13 @@ export default class ExploreCreepStrategy implements CreepStrategy {
       return creep.setStrategy(new ParkingCreepStrategy());
 
     if(creep.creep.pos.x === this.target.x && creep.creep.pos.y === this.target.y) {
-      if(this.fromRoomName !== creep.creep.room.name) {
-        creep.updateRoom();
-        return creep.setStrategy(new ClaimCreepStrategy());
-      }
+      console.log('reached destination', this.fromRoomName, creep.creep.room.name);
+    }
+
+    if(this.fromRoomName !== creep.creep.room.name) {
+      console.log('switched room', this.fromRoomName, creep.creep.room.name);
+      creep.updateRoom();
+      return creep.setStrategy(new ClaimCreepStrategy(creep.creep.room.name));
     }
 
     creep.moveTo(this.target);

@@ -26,16 +26,16 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
       if(creep.room.room.controller.ticksToDowngrade < 1000)
         return creep.setStrategy(new UpgradeCreepStrategy());
 
-        let availableTransferSites = creep.room.getTransferrableStructures();
-        if(availableTransferSites.length > 0)
-          return creep.setStrategy(new TransferCreepStrategy());
+      if(creep.room.unexploredNeighbourNames.length > 0 && creep.creep.body.find(x => x.type === CLAIM))
+        return creep.setStrategy(new ExploreCreepStrategy(creep.room.getRandomUnexploredNeighbourName()));
+
+      let availableTransferSites = creep.room.getTransferrableStructures();
+      if(availableTransferSites.length > 0)
+        return creep.setStrategy(new TransferCreepStrategy());
 
       let availableConstructionSites = creep.room.constructionSites;
       if(availableConstructionSites.length > 0)
         return creep.setStrategy(new BuildingCreepStrategy());
-
-      if(creep.room.unexploredNeighbourNames.length > 0 && creep.creep.body.find(x => x.type === CLAIM))
-        return creep.setStrategy(new ExploreCreepStrategy(creep.room.getRandomUnexploredNeighbourName()));
 
       return creep.setStrategy(new UpgradeCreepStrategy());
     }
