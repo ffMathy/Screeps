@@ -101,7 +101,10 @@ export default class RoomDecorator {
     }
 
     private refreshConstructionSites() {
-      this.constructionSites = this.isClaimed ? this.room.find(FIND_CONSTRUCTION_SITES) : [];
+      if(!this.isClaimed)
+        return;
+
+      this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES);
     }
 
     refresh() {
