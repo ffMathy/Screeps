@@ -78,11 +78,11 @@ export default class SpawnDecorator {
             return;
 
         for(let room of this.game.rooms.lowPopulation) {
-            if(room.isPopulationMaintained && room.unexploredNeighbourNames.length > 0) {
-                this.spawnCreep([CLAIM, MOVE], room.roomName);
-            } else if(!room.isPopulationMaintained) {
-                this.spawnCreep(qualities, room.roomName);
-            }
+            this.spawnCreep(qualities, room.roomName);
+        }
+
+        if(this.room.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
+            this.spawnCreep([CLAIM, MOVE], this.room.getRandomUnexploredNeighbourName());
         }
     }
 
