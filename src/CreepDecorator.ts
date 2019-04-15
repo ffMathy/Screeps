@@ -46,6 +46,7 @@ export default class CreepDecorator {
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
     this.lastStrategyTick = this.game.tickCount;
+    this.creep.memory.strategy = strategy.name;
   }
 
   updateRoom() {
