@@ -58,7 +58,7 @@ export default class RoomDecorator {
     }
 
     private refreshPopulationMaintenanceStatus() {
-        this._isPopulationMaintained = this.creeps.length >= 15;
+        this._isPopulationMaintained = this.creeps.length >= 5;
     }
 
     createConstructionSite(x: number, y: number, structureType: string): number {

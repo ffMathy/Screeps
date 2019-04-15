@@ -26,7 +26,7 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
       return creep.setStrategy(new HarvestCreepStrategy());
 
     if(!isEmpty) {
-      if(creep.room.room && creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000) {
+      if(creep.room.room && (creep.room.room.controller.level === 0 || (creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000))) {
         console.log('rescue');
         return creep.setStrategy(new UpgradeCreepStrategy());
       }
