@@ -48,8 +48,6 @@ export default class Resources {
 
     if(this.resources[resourceId].reservationCount > 0)
       this.resources[resourceId].reservationCount--;
-
-    //console.log('unreserved resource', resourceId);
   }
 
   isReserved(resourceId: string) {

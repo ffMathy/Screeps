@@ -30,6 +30,9 @@ export default class TerrainDecorator {
   }
 
   increaseTilePopularity(x: number, y: number) {
+    if(!this.room.room || !this.room.room.controller || this.room.room.controller.level < 2)
+      return;
+
     let i = x + 50*y;
     if(!this.tilePopularity[i])
       this.tilePopularity[i] = 0;

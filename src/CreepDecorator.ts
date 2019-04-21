@@ -1,5 +1,5 @@
 import RoomDecorator from 'RoomDecorator';
-import StrategyPickingCreepStrategy from 'strategies/StrategyPickingCreepStrategy';
+import StrategyPickingCreepStrategy from 'strategies/creep/StrategyPickingCreepStrategy';
 import GameDecorator from 'GameDecorator';
 
 export interface CreepMemory {

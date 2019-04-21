@@ -1,7 +1,7 @@
 import CreepDecorator from 'CreepDecorator';
 import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
-import ParkingCreepStrategy from 'strategies/ParkingCreepStrategy';
+import ParkingCreepStrategy from 'strategies/creep/ParkingCreepStrategy';
 
 export default class SpawnDecorator {
     private readonly spawnName: string;
@@ -87,6 +87,6 @@ export default class SpawnDecorator {
     }
 
     tick() {
-        this.maintainPopulation([MOVE, CARRY, WORK]);
+        this.maintainPopulation([MOVE, MOVE, CARRY, WORK]);
     }
 };
