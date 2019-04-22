@@ -71,7 +71,7 @@ export default class RoomDecorator {
   private refreshPopulationMaintenanceStatus() {
     this._isPopulationMaintained = this.creeps.length >= 5;
 
-    if(this._isPopulationMaintained) {
+    if(this._isPopulationMaintained || !this.room || !this.room.controller) {
       Arrays.remove(this.rooms.lowPopulation, this);
 
       if(this.room)
