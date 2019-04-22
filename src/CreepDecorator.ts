@@ -23,6 +23,7 @@ export default class CreepDecorator {
     public creep: Creep)
   {
     this.room = game.rooms.fromCreep(creep);
+    this.room.addCreep(this);
     this.strategy = new StrategyPickingCreepStrategy(this);
   }
 

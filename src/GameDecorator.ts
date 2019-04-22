@@ -45,6 +45,7 @@ export default class GameDecorator {
 
     this.rooms.tick();
     this.creeps.tick();
+
     this._usedCpu = Game.cpu.getUsed();
   }
 }

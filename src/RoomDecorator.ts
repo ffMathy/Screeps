@@ -19,6 +19,8 @@ export default class RoomDecorator {
   public creeps: CreepDecorator[];
   public terrain: TerrainDecorator;
 
+  public ticks: number;
+
   private strategy: RoomStrategy;
 
   private _neighbouringRoomsByDirection: { [direction: string]: RoomDecorator };
@@ -54,6 +56,7 @@ export default class RoomDecorator {
     private readonly rooms: RoomsDecorator,
     public readonly roomName: string) {
     this.creeps = [];
+    this.ticks = 0;
 
     this._isPopulationMaintained = false;
 
@@ -69,12 +72,12 @@ export default class RoomDecorator {
     this._isPopulationMaintained = this.creeps.length >= 5;
 
     if(this._isPopulationMaintained) {
-      Arrays.add(this.rooms.lowPopulation, this);
+      Arrays.remove(this.rooms.lowPopulation, this);
 
       if(this.room)
         this.sayAt(this.room.controller, '😃');
     } else {
-      Arrays.remove(this.rooms.lowPopulation, this);
+      Arrays.add(this.rooms.lowPopulation, this);
 
       if(this.room)
         this.sayAt(this.room.controller, '😟');
@@ -194,5 +197,6 @@ export default class RoomDecorator {
 
   tick() {
     this.strategy.tick();
+    this.ticks++;
   }
 }

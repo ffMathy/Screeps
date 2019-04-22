@@ -6,6 +6,8 @@ export default class StrategyPickingRoomStrategy implements RoomStrategy {
 
   constructor(private readonly room: RoomDecorator) {
     this._lastControllerLevel = null;
+    if(room.room && room.room.controller)
+      this._lastControllerLevel = room.room.controller.level;
   }
 
   get name() {
@@ -16,10 +18,8 @@ export default class StrategyPickingRoomStrategy implements RoomStrategy {
     let room = this.room;
     if(room.room && room.room.controller) {
       if(room.room.controller.level !== this._lastControllerLevel) {
-        if(this._lastControllerLevel !== null)
-          room.setStrategy(new ConstructStructuresRoomStrategy(room));
-
         this._lastControllerLevel = room.room.controller.level;
+        return room.setStrategy(new ConstructStructuresRoomStrategy(room));
       }
     }
 
