@@ -28,7 +28,7 @@ export default class Resources {
         throw new Error('Could not load creeps.');
 
       resource.id = source.id;
-      resource.reservationCount = Math.floor(creeps.length / 2);
+      resource.reservationCount = Math.floor(creeps.length);
       resource.terrainCapacity = 9 - _.countBy(tiles, "terrain").wall;
 
       this.resources[source.id] = resource;

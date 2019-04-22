@@ -36,11 +36,9 @@ export default class StrategyPickingCreepStrategy implements Strategy {
         return creep.setStrategy(new UpgradeCreepStrategy(creep));
       }
 
-      if(!creep.room.spawns.find(x => !!x.getSpawnDetails())) {
-        let availableTransferSites = creep.room.getTransferrableStructures();
-        if(availableTransferSites.length > 0)
-          return creep.setStrategy(new TransferCreepStrategy(creep, availableTransferSites));
-      }
+      let availableTransferSites = creep.room.getTransferrableStructures();
+      if(availableTransferSites.length > 0)
+        return creep.setStrategy(new TransferCreepStrategy(creep, availableTransferSites));
 
       let availableConstructionSites = creep.room.constructionSites;
       if(availableConstructionSites.length > 0)
