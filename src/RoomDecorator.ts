@@ -62,7 +62,7 @@ export default class RoomDecorator {
     this._neighbouringRoomsByDirection = {};
     this._allNeighbouringRooms = [];
 
-    this.strategy = new StrategyPickingRoomStrategy();
+    this.strategy = new StrategyPickingRoomStrategy(this);
   }
 
   private refreshPopulationMaintenanceStatus() {
@@ -193,6 +193,6 @@ export default class RoomDecorator {
   }
 
   tick() {
-    this.strategy.tick(this.rooms, this);
+    this.strategy.tick();
   }
 }

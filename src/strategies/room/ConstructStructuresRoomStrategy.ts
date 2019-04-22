@@ -1,5 +1,4 @@
 import RoomDecorator, { RoomStrategy } from '../../RoomDecorator';
-import RoomsDecorator from 'RoomsDecorator';
 import StrategyPickingRoomStrategy from './StrategyPickingRoomStrategy';
 
 export default class ConstructStructuresRoomStrategy implements RoomStrategy {
@@ -7,7 +6,10 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
     return "build";
   }
 
+  constructor(private readonly room: RoomDecorator) {}
+
   tick() {
+    let room = this.room;
     let structures = (room.room.find(FIND_STRUCTURES) as Structure[]).filter(x => x.structureType !== STRUCTURE_ROAD);
 
     let typesToBuild = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION];
@@ -51,7 +53,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
     }
 
     room.refresh();
-    room.setStrategy(new StrategyPickingRoomStrategy());
+    room.setStrategy(new StrategyPickingRoomStrategy(room));
   }
 
   private calculateSpiralOffset(offset) {

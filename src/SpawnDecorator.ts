@@ -63,7 +63,7 @@ export default class SpawnDecorator {
                 throw new Error('Could not fetch spawned creep.');
 
             let creepDecorator = new CreepDecorator(this.game, creepSpawned);
-            creepDecorator.setStrategy(new ParkingCreepStrategy(roomName));
+            creepDecorator.setStrategy(new ParkingCreepStrategy(creepDecorator, roomName));
 
             this.game.creeps.add(creepDecorator);
 

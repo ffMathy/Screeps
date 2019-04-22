@@ -1,5 +1,4 @@
 import RoomDecorator, { RoomStrategy } from '../../RoomDecorator';
-import RoomsDecorator from 'RoomsDecorator';
 import ConstructStructuresRoomStrategy from './ConstructStructuresRoomStrategy';
 
 export default class StrategyPickingRoomStrategy implements RoomStrategy {
@@ -14,10 +13,11 @@ export default class StrategyPickingRoomStrategy implements RoomStrategy {
   }
 
   tick() {
+    let room = this.room;
     if(room.room && room.room.controller) {
       if(room.room.controller.level !== this._lastControllerLevel) {
         if(this._lastControllerLevel !== null)
-          room.setStrategy(new ConstructStructuresRoomStrategy());
+          room.setStrategy(new ConstructStructuresRoomStrategy(room));
 
         this._lastControllerLevel = room.room.controller.level;
       }

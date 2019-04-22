@@ -1,18 +1,21 @@
-import CreepDecorator, { CreepStrategy } from "CreepDecorator";
+import CreepDecorator from "CreepDecorator";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
 import RoomDecorator from "RoomDecorator";
+import Strategy from "strategies/Strategy";
 
-export default class ClaimCreepStrategy implements CreepStrategy {
+export default class ClaimCreepStrategy implements Strategy {
   get name() {
     return "claim";
   }
 
   constructor(
+    private readonly creep:CreepDecorator,
     private readonly previousRoom: RoomDecorator,
     private readonly targetRoomName: string) {
   }
 
-  tick(creep: CreepDecorator) {
+  tick() {
+    var creep=this.creep;
     let controller = creep.creep.room.controller;
     if(!controller) {
       this.previousRoom.unexploredNeighbourNames.splice(this.previousRoom.unexploredNeighbourNames.indexOf(this.targetRoomName), 1);
@@ -22,7 +25,7 @@ export default class ClaimCreepStrategy implements CreepStrategy {
         creep.moveTo(controller);
       } else {
         this.previousRoom.detectNeighbours();
-        creep.setStrategy(new StrategyPickingCreepStrategy());
+        creep.setStrategy(new StrategyPickingCreepStrategy(creep));
       }
     }
   }

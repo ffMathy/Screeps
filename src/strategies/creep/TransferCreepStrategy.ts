@@ -1,7 +1,8 @@
 import CreepDecorator from "CreepDecorator";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
+import Strategy from "strategies/Strategy";
 
-export default class TransferCreepStrategy implements CreepStrategy {
+export default class TransferCreepStrategy implements Strategy {
   get name() {
     return "transfer";
   }

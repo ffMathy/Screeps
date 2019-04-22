@@ -23,7 +23,7 @@ export default class StrategyPickingCreepStrategy implements Strategy {
     let carryCapacity = creep.creep.carryCapacity;
 
     if(creep.room.unexploredNeighbourNames.length > 0 && creep.creep.body.find(x => x.type === CLAIM))
-      return creep.setStrategy(new ExploreCreepStrategy(creep.room.getRandomUnexploredNeighbourName()));
+      return creep.setStrategy(new ExploreCreepStrategy(creep, creep.room.getRandomUnexploredNeighbourName()));
 
     let isFull = energyCarry === carryCapacity;
     let isEmpty = energyCarry == 0;
@@ -39,7 +39,7 @@ export default class StrategyPickingCreepStrategy implements Strategy {
       if(!creep.room.spawns.find(x => !!x.getSpawnDetails())) {
         let availableTransferSites = creep.room.getTransferrableStructures();
         if(availableTransferSites.length > 0)
-          return creep.setStrategy(new TransferCreepStrategy(availableTransferSites));
+          return creep.setStrategy(new TransferCreepStrategy(creep, availableTransferSites));
       }
 
       let availableConstructionSites = creep.room.constructionSites;
