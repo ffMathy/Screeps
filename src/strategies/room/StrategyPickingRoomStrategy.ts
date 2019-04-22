@@ -8,7 +8,6 @@ export default class StrategyPickingRoomStrategy implements RoomStrategy {
     this._lastControllerLevel = null;
     if(room.room && room.room.controller) {
       this._lastControllerLevel = room.room.controller.level;
-      room.setStrategy(new ConstructStructuresRoomStrategy(room));
     }
   }
 
