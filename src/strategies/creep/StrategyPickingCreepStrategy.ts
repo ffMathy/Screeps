@@ -1,4 +1,4 @@
-import CreepDecorator, { CreepStrategy } from "CreepDecorator";
+import CreepDecorator from "CreepDecorator";
 import BuildingCreepStrategy from "./BuildingCreepStrategy";
 import HarvestCreepStrategy from "./HarvestCreepStrategy";
 import TransferCreepStrategy from "./TransferCreepStrategy";
@@ -6,13 +6,19 @@ import UpgradeCreepStrategy from "./UpgradeCreepStrategy";
 import ParkingCreepStrategy from "./ParkingCreepStrategy";
 import GameDecorator from "GameDecorator";
 import ExploreCreepStrategy from "./ExploreCreepStrategy";
+import Strategy from "strategies/Strategy";
 
-export default class StrategyPickingCreepStrategy implements CreepStrategy {
+export default class StrategyPickingCreepStrategy implements Strategy {
   get name() {
     return "look";
   }
 
-  tick(creep: CreepDecorator) {
+  constructor(
+    private readonly creep: CreepDecorator)
+  { }
+
+  tick() {
+    let creep = this.creep;
     let energyCarry = creep.creep.carry.energy;
     let carryCapacity = creep.creep.carryCapacity;
 
@@ -23,11 +29,11 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
     let isEmpty = energyCarry == 0;
     let availableSources = creep.room.sources.filter(x => !GameDecorator.instance.resources.isReserved(x.id));
     if(!isFull && availableSources.length > 0)
-      return creep.setStrategy(new HarvestCreepStrategy());
+      return creep.setStrategy(new HarvestCreepStrategy(creep));
 
     if(!isEmpty) {
       if(creep.room.room && (creep.room.room.controller.level === 0 || (creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000))) {
-        return creep.setStrategy(new UpgradeCreepStrategy());
+        return creep.setStrategy(new UpgradeCreepStrategy(creep));
       }
 
       if(!creep.room.spawns.find(x => !!x.getSpawnDetails())) {
@@ -38,11 +44,11 @@ export default class StrategyPickingCreepStrategy implements CreepStrategy {
 
       let availableConstructionSites = creep.room.constructionSites;
       if(availableConstructionSites.length > 0)
-        return creep.setStrategy(new BuildingCreepStrategy());
+        return creep.setStrategy(new BuildingCreepStrategy(creep));
 
-      return creep.setStrategy(new UpgradeCreepStrategy());
+      return creep.setStrategy(new UpgradeCreepStrategy(creep));
     }
 
-    return creep.setStrategy(new ParkingCreepStrategy());
+    return creep.setStrategy(new ParkingCreepStrategy(creep));
   }
 }

@@ -9,7 +9,7 @@ import StrategyPickingRoomStrategy from "strategies/room/StrategyPickingRoomStra
 export interface RoomStrategy {
   readonly name: string;
 
-  tick(rooms: RoomsDecorator, room: RoomDecorator);
+  tick();
 }
 
 export default class RoomDecorator {
@@ -67,6 +67,18 @@ export default class RoomDecorator {
 
   private refreshPopulationMaintenanceStatus() {
     this._isPopulationMaintained = this.creeps.length >= 5;
+
+    if(this._isPopulationMaintained) {
+      Arrays.add(this.rooms.lowPopulation, this);
+
+      if(this.room)
+        this.sayAt(this.room.controller, '😃');
+    } else {
+      Arrays.remove(this.rooms.lowPopulation, this);
+
+      if(this.room)
+        this.sayAt(this.room.controller, '😟');
+    }
   }
 
   createConstructionSite(x: number, y: number, structureType: string): number {
@@ -88,9 +100,6 @@ export default class RoomDecorator {
     this.sources = this.isClaimed ? this.room.find(FIND_SOURCES) : [];
 
     this.refresh();
-
-    if (!this.isPopulationMaintained)
-      Arrays.add(this.rooms.lowPopulation, this);
   }
 
   addCreep(creep: CreepDecorator) {

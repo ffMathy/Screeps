@@ -1,7 +1,8 @@
-import CreepDecorator, { CreepStrategy } from "CreepDecorator";
+import CreepDecorator from "CreepDecorator";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
+import Strategy from "strategies/Strategy";
 
-export default class ParkingCreepStrategy implements CreepStrategy {
+export default class ParkingCreepStrategy implements Strategy {
   private readonly _parkPosition = { x: 25, y: 25 };
 
   private _lastPosition: RoomPosition = null;
@@ -12,12 +13,14 @@ export default class ParkingCreepStrategy implements CreepStrategy {
   }
 
   constructor(
+    private readonly creep: CreepDecorator,
     private readonly targetRoomName?: string) {
 
       this._impedimentCount = 0;
   }
 
-  tick(creep: CreepDecorator) {
+  tick() {
+    let creep = this.creep;
     let targetRoomName = this.targetRoomName || creep.creep.room.name;
 
     let isImpeded = this._lastPosition && this._lastPosition.x === creep.creep.pos.x && this._lastPosition.y === creep.creep.pos.y;
@@ -28,17 +31,17 @@ export default class ParkingCreepStrategy implements CreepStrategy {
     }
 
     if(creep.creep.room.name === targetRoomName && creep.creep.pos.x === this._parkPosition.x && creep.creep.pos.y === this._parkPosition.y) {
-        return creep.setStrategy(new StrategyPickingCreepStrategy());
+        return creep.setStrategy(new StrategyPickingCreepStrategy(creep));
     }
 
     if(this._impedimentCount > 5) {
       if(creep.room.isPopulationMaintained) {
         let neighbourWithLowPopulation = creep.room.neighbours.find(x => x.room && !x.isPopulationMaintained);
         if(neighbourWithLowPopulation)
-          return creep.setStrategy(new ParkingCreepStrategy(neighbourWithLowPopulation.room.name));
+          return creep.setStrategy(new ParkingCreepStrategy(creep, neighbourWithLowPopulation.room.name));
       }
 
-      return creep.setStrategy(new StrategyPickingCreepStrategy());
+      return creep.setStrategy(new StrategyPickingCreepStrategy(creep));
     }
 
     this._lastPosition = creep.creep.pos;

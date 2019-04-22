@@ -1,28 +1,33 @@
-import CreepDecorator, { CreepStrategy } from "CreepDecorator";
+import CreepDecorator from "CreepDecorator";
 import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
+import Strategy from "strategies/Strategy";
 
-export default class BuildingCreepStrategy implements CreepStrategy {
+export default class BuildingCreepStrategy implements Strategy {
   get name() {
     return "build";
   }
 
-  tick(creep: CreepDecorator) {
-    if(creep.creep.carry.energy == 0)
-      return creep.setStrategy(new StrategyPickingCreepStrategy());
+  constructor(
+    private readonly creep: CreepDecorator
+  ) {}
 
-    var target = creep.room.constructionSites[0];
+  tick() {
+    if(this.creep.creep.carry.energy == 0)
+      return this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
+
+    var target = this.creep.room.constructionSites[0];
     if (target) {
-      if (creep.creep.build(target) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(target);
+      if (this.creep.creep.build(target) == ERR_NOT_IN_RANGE) {
+        this.creep.moveTo(target);
       } else {
         target = Game.getObjectById(target.id);
         if(!target || target.progress >= target.progressTotal) {
-          creep.room.refresh();
-          return creep.setStrategy(new StrategyPickingCreepStrategy());
+          this.creep.room.refresh();
+          return this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
         }
       }
     } else {
-      return creep.setStrategy(new StrategyPickingCreepStrategy());
+      return this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
     }
   }
 

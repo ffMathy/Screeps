@@ -7,7 +7,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
     return "build";
   }
 
-  tick(_rooms: RoomsDecorator, room: RoomDecorator) {
+  tick() {
     let structures = (room.room.find(FIND_STRUCTURES) as Structure[]).filter(x => x.structureType !== STRUCTURE_ROAD);
 
     let typesToBuild = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION];
@@ -51,7 +51,6 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
     }
 
     room.refresh();
-
     room.setStrategy(new StrategyPickingRoomStrategy());
   }
 

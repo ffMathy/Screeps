@@ -59,10 +59,8 @@ export default class SpawnDecorator {
 
         if(spawnResult === 0) {
             let creepSpawned = Game.creeps[creepName];
-            if(!creepSpawned) {
-                console.log('could not fetch spawned creep');
-                return;
-            }
+            if(!creepSpawned)
+                throw new Error('Could not fetch spawned creep.');
 
             let creepDecorator = new CreepDecorator(this.game, creepSpawned);
             creepDecorator.setStrategy(new ParkingCreepStrategy(roomName));
@@ -73,12 +71,14 @@ export default class SpawnDecorator {
         }
     }
 
-    maintainPopulation(qualities) {
+    maintainPopulation() {
         if(this.getSpawnDetails())
             return;
 
-        for(let room of this.game.rooms.lowPopulation) {
-            this.spawnCreep(qualities, room.roomName);
+        if(this.game.rooms.lowPopulation.length > 0) {
+            for(let room of this.game.rooms.lowPopulation) {
+                this.spawnCreep([MOVE, MOVE, CARRY, WORK], room.roomName);
+            }
         }
 
         if(this.room.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
@@ -87,6 +87,6 @@ export default class SpawnDecorator {
     }
 
     tick() {
-        this.maintainPopulation([MOVE, MOVE, CARRY, WORK]);
+        this.maintainPopulation();
     }
 };

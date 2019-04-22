@@ -1,21 +1,16 @@
 import RoomDecorator from 'RoomDecorator';
 import StrategyPickingCreepStrategy from 'strategies/creep/StrategyPickingCreepStrategy';
 import GameDecorator from 'GameDecorator';
+import Strategy from 'strategies/Strategy';
 
 export interface CreepMemory {
   reservationId: string;
 }
 
-export interface CreepStrategy {
-  readonly name: string;
-
-  tick(creep: CreepDecorator);
-}
-
 export default class CreepDecorator {
   public room: RoomDecorator;
 
-  private strategy: CreepStrategy;
+  private strategy: Strategy;
   private lastStrategyTick: number;
   private lastPosition: RoomPosition;
 
@@ -28,7 +23,7 @@ export default class CreepDecorator {
     public creep: Creep)
   {
     this.room = game.rooms.fromCreep(creep);
-    this.strategy = new StrategyPickingCreepStrategy();
+    this.strategy = new StrategyPickingCreepStrategy(this);
   }
 
   moveTo(target: RoomPosition | { pos: RoomPosition; }, opts?: MoveToOpts) {
@@ -43,7 +38,7 @@ export default class CreepDecorator {
     return this.creep.moveTo(target, opts);
   }
 
-  setStrategy(strategy: CreepStrategy) {
+  setStrategy(strategy: Strategy) {
     this.strategy = strategy;
     this.lastStrategyTick = this.game.tickCount;
     this.creep.memory.strategy = strategy.name;
@@ -80,6 +75,6 @@ export default class CreepDecorator {
     if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
       this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
 
-    this.strategy.tick(this);
+    this.strategy.tick();
   }
 }

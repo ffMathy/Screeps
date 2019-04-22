@@ -4,6 +4,7 @@ import RoomsDecorator from "RoomsDecorator";
 interface Resource {
   terrainCapacity: number;
   reservationCount: number;
+  id: string;
 }
 
 export default class Resources {
@@ -17,13 +18,19 @@ export default class Resources {
     for(let room of this.rooms.all)
     for(let source of room.sources) {
       let resource = {} as Resource;
-      resource.reservationCount = 0;
 
       let tiles = source.room.lookForAtArea(LOOK_TERRAIN, source.pos.y-1, source.pos.x-1, source.pos.y+1, source.pos.x+1, true);
       if(!Array.isArray(tiles))
         throw new Error('Could not load tiles.');
 
-      resource.terrainCapacity = 9 - _.countBy(tiles, "terrain" ).wall;
+      let creeps = source.room.lookForAtArea(LOOK_CREEPS, source.pos.y-1, source.pos.x-1, source.pos.y+1, source.pos.x+1, true);
+      if(!Array.isArray(creeps))
+        throw new Error('Could not load creeps.');
+
+      resource.id = source.id;
+      resource.reservationCount = Math.floor(creeps.length / 2);
+      resource.terrainCapacity = 9 - _.countBy(tiles, "terrain").wall;
+
       this.resources[source.id] = resource;
     }
   }
@@ -36,7 +43,13 @@ export default class Resources {
     creep.memory.reservationId = resourceId;
     resource.reservationCount++;
 
+    this.announceReservationCount(creep, this.resources[resourceId]);
+
     return true;
+  }
+
+  private announceReservationCount(creep: CreepDecorator, resource: Resource) {
+    creep.room.sayAt(Game.getObjectById(resource.id), resource.reservationCount);
   }
 
   unreserve(creep: CreepDecorator | Creep) {
@@ -48,6 +61,9 @@ export default class Resources {
 
     if(this.resources[resourceId].reservationCount > 0)
       this.resources[resourceId].reservationCount--;
+
+    if(creep instanceof CreepDecorator)
+      this.announceReservationCount(creep, this.resources[resourceId]);
   }
 
   isReserved(resourceId: string) {

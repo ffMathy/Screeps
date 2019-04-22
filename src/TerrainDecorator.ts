@@ -39,9 +39,9 @@ export default class TerrainDecorator {
 
     this.tileLastIncreaseTick[i] = Game.time;
 
-    const maximumPopularity = 500;
+    const maximumPopularity = 400;
 
-    let popularity = Math.min(maximumPopularity, this.tilePopularity[i]+5);
+    let popularity = Math.min(maximumPopularity, this.tilePopularity[i]+3);
     if(popularity === maximumPopularity) {
       this.room.createConstructionSite(x, y, STRUCTURE_ROAD);
       popularity = 1;
