@@ -18,7 +18,7 @@ export default class StrategyPickingRoomStrategy implements RoomStrategy {
   tick() {
     let room = this.room;
     if(room.room && room.room.controller) {
-      if(room.room.controller.level !== this._lastControllerLevel) {
+      if(room.room.controller.level !== this._lastControllerLevel || Game.time % 900 === 1) {
         this._lastControllerLevel = room.room.controller.level;
         return room.setStrategy(new ConstructStructuresRoomStrategy(room));
       }
