@@ -18,8 +18,7 @@ export default class RoomDecorator {
   public spawns: SpawnDecorator[];
   public creeps: CreepDecorator[];
   public terrain: TerrainDecorator;
-
-  public ticks: number;
+  public transferrableStructures: (Structure | Spawn | Tower)[];
 
   private strategy: RoomStrategy;
 
@@ -56,7 +55,6 @@ export default class RoomDecorator {
     private readonly rooms: RoomsDecorator,
     public readonly roomName: string) {
     this.creeps = [];
-    this.ticks = 0;
 
     this._isPopulationMaintained = false;
 
@@ -177,7 +175,7 @@ export default class RoomDecorator {
   }
 
   //TODO: optimize this
-  getTransferrableStructures(): (Structure | Spawn)[] {
+  getTransferrableStructures(): (Structure | Spawn | Tower)[] {
     if (!this.room)
       return [];
 
@@ -197,6 +195,5 @@ export default class RoomDecorator {
 
   tick() {
     this.strategy.tick();
-    this.ticks++;
   }
 }
