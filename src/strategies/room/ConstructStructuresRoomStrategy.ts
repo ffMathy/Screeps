@@ -53,6 +53,11 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
           throw new Error('Could not build a ' + typeToBuild + ' with RCL ' + room.room.controller.level);
         } else if(buildResult === ERR_INVALID_TARGET) {
           //an existing building exists here
+        } else if(buildResult === ERR_FULL) {
+          //too many structures already
+
+          //TODO: kill roads to make room.
+          break;
         } else {
           console.log('build error', buildResult);
           throw new Error('Build error: ' + buildResult);
