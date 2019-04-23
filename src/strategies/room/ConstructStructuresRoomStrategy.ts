@@ -28,7 +28,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
       let countBuilt = structuresOfType.length + constructionSitesOfType.length;
       console.log('building', room.roomName, countBuilt, totalAvailable);
 
-      let offset = structures.length;
+      let offset = countBuilt + (countBuilt % 2) - 1;
       while(countBuilt < totalAvailable) {
         let currentOffset = offset;
 
@@ -49,6 +49,8 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
           countBuilt++;
         } else if(buildResult === ERR_RCL_NOT_ENOUGH) {
           throw new Error('Could not build a ' + typeToBuild + ' with RCL ' + room.room.controller.level);
+        } else if(buildResult === ERR_INVALID_TARGET) {
+          //an existing building exists here
         } else {
           console.log('build error', buildResult);
           throw new Error('Build error: ' + buildResult);
