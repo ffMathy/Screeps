@@ -1,6 +1,5 @@
 import RoomDecorator, { RoomStrategy } from '../../RoomDecorator';
 import StrategyPickingRoomStrategy from './StrategyPickingRoomStrategy';
-import { type } from 'os';
 
 export default class ConstructStructuresRoomStrategy implements RoomStrategy {
   get name() {
