@@ -10,23 +10,19 @@ export default class ClaimCreepStrategy implements Strategy {
 
   constructor(
     private readonly creep:CreepDecorator,
-    private readonly previousRoom: RoomDecorator,
     private readonly targetRoomName: string) {
   }
 
   tick() {
     var creep=this.creep;
     let controller = creep.creep.room.controller;
-    if(!controller) {
-      this.previousRoom.unexploredNeighbourNames.splice(this.previousRoom.unexploredNeighbourNames.indexOf(this.targetRoomName), 1);
+    let claimResult = creep.creep.claimController(controller);
+    if(claimResult === ERR_NOT_IN_RANGE) {
+      creep.moveTo(controller);
+    } else if(claimResult === ERR_INVALID_TARGET) {
+      creep.creep.suicide();
     } else {
-      let claimResult = creep.creep.claimController(controller);
-      if(claimResult === ERR_NOT_IN_RANGE) {
-        creep.moveTo(controller);
-      } else {
-        this.previousRoom.detectNeighbours();
-        creep.setStrategy(new StrategyPickingCreepStrategy(creep));
-      }
+      throw new Error('Invalid claim result: ' + claimResult);
     }
   }
 }

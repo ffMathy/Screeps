@@ -21,8 +21,15 @@ export default class StrategyPickingCreepStrategy implements Strategy {
     let creep = this.creep;
     let energyCarry = creep.creep.carry.energy;
 
-    if(creep.room.unexploredNeighbourNames.length > 0 && creep.creep.body.find(x => x.type === CLAIM))
-      return creep.setStrategy(new ExploreCreepStrategy(creep, creep.room.getRandomUnexploredNeighbourName()));
+    let hasClaim = !!creep.creep.body.find(x => x.type === CLAIM);
+    if(hasClaim) {
+      let roomToExplore = creep.room.unexploredNeighbourNames.length > 0 ?
+        creep.room.getRandomUnexploredNeighbourName() :
+        creep.room.roomName;
+      return creep.setStrategy(new ExploreCreepStrategy(creep, roomToExplore));
+    } else if(creep.room.room.controller && !creep.room.room.controller.my) {
+      return creep.setStrategy(new ParkingCreepStrategy(creep, GameDecorator.instance.rooms.all.find(x => x.room.controller && x.room.controller.my).roomName));
+    }
 
     let isEmpty = energyCarry == 0;
     let availableSources = creep.room.sources.filter(x => !GameDecorator.instance.resources.isReserved(x.id));

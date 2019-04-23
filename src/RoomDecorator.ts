@@ -53,8 +53,10 @@ export default class RoomDecorator {
   constructor(
     private readonly game: GameDecorator,
     private readonly rooms: RoomsDecorator,
-    public readonly roomName: string) {
+    public readonly roomName: string)
+  {
     this.creeps = [];
+    this.constructionSites = [];
 
     this._isPopulationMaintained = false;
 
@@ -167,6 +169,9 @@ export default class RoomDecorator {
   }
 
   sayAt(object, text) {
+    if(!object || !object.pos)
+      return;
+
     this.room.visual.text(
       text,
       object.pos.x + 1,

@@ -10,7 +10,9 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
   tick() {
     let room = this.room;
-    let structures = (room.room.find(FIND_STRUCTURES) as Structure[]).filter(x => x.structureType !== STRUCTURE_ROAD);
+
+    let rawStructures = (room.room.find(FIND_STRUCTURES) as Structure[]) || [];
+    let structures = rawStructures.filter(x => x.structureType !== STRUCTURE_ROAD);
 
     let typesToBuild = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION];
     for(let typeToBuild of typesToBuild) {

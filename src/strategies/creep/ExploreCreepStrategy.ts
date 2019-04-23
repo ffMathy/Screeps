@@ -26,19 +26,22 @@ export default class ExploreCreepStrategy implements Strategy {
       this.target = creep.creep.pos.findClosestByPath(creep.creep.room.findExitTo(this.roomName));
       this.fromRoomName = creep.creep.room.name;
       this.fromRoom = creep.room;
-    }
 
-    if(!this.target)
-      return creep.setStrategy(new ParkingCreepStrategy(creep));
+      if(this.roomName === this.fromRoomName)
+        return creep.setStrategy(new ClaimCreepStrategy(
+          creep,
+          this.roomName));
+    }
 
     if(this.fromRoomName !== creep.creep.room.name) {
       creep.moveTo(creep.creep.room.controller);
-      creep.setStrategy(new ClaimCreepStrategy(
+      return creep.setStrategy(new ClaimCreepStrategy(
         creep,
-        this.fromRoom,
         creep.creep.room.name));
-      return;
     }
+
+    if(!this.target)
+      throw new Error("No target exit from room " + this.fromRoomName + " to room " + this.roomName + " found.");
 
     creep.moveTo(this.target);
   }
