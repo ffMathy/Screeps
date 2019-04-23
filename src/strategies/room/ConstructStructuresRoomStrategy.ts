@@ -48,6 +48,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
           countBuilt++;
         } else {
           console.log('build error', buildResult);
+          throw new Error('Build error: ' + buildResult);
         }
       }
     }
