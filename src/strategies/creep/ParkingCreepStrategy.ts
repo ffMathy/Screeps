@@ -34,7 +34,7 @@ export default class ParkingCreepStrategy implements Strategy {
         return creep.setStrategy(new StrategyPickingCreepStrategy(creep));
     }
 
-    if(this._impedimentCount > 5) {
+    if(this._impedimentCount > 30) {
       if(creep.room.isPopulationMaintained) {
         let neighbourWithLowPopulation = creep.room.neighbours.find(x => x.room && x.room.controller && x.room.controller.my && !x.isPopulationMaintained);
         if(neighbourWithLowPopulation)
