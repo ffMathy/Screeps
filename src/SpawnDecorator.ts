@@ -68,6 +68,10 @@ export default class SpawnDecorator {
             this.game.creeps.add(creepDecorator);
 
             this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
+        } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
+            this.room.sayAt(Game.spawns[this.spawnName], '🙁 energy');
+        } else {
+            throw new Error('Could not spawn creep: ' + spawnResult);
         }
     }
 
