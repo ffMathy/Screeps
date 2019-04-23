@@ -1,5 +1,6 @@
 import RoomDecorator, { RoomStrategy } from '../../RoomDecorator';
 import StrategyPickingRoomStrategy from './StrategyPickingRoomStrategy';
+import { type } from 'os';
 
 export default class ConstructStructuresRoomStrategy implements RoomStrategy {
   get name() {
@@ -31,6 +32,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
       let offset = structures.length;
       while(countBuilt < totalAvailable) {
         let currentOffset = offset;
+
         let position = this.calculateSpiralOffset(currentOffset);
         position.x += room.room.controller.pos.x;
         position.y += room.room.controller.pos.y;
@@ -46,6 +48,8 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
           console.log('built', room.roomName, currentOffset, position.x, position.y);
 
           countBuilt++;
+        } else if(buildResult === ERR_RCL_NOT_ENOUGH) {
+          throw new Error('Could not build a ' + typeToBuild + ' with RCL ' + room.room.controller.level);
         } else {
           console.log('build error', buildResult);
           throw new Error('Build error: ' + buildResult);
