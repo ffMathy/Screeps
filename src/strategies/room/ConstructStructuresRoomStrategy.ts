@@ -1,5 +1,6 @@
 import RoomDecorator, { RoomStrategy } from '../../RoomDecorator';
 import StrategyPickingRoomStrategy from './StrategyPickingRoomStrategy';
+import Coordinates from 'helpers/Coordinates';
 
 export default class ConstructStructuresRoomStrategy implements RoomStrategy {
   get name() {
@@ -37,7 +38,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
       while(countBuilt < totalAvailable) {
         let currentOffset = offset;
 
-        let position = this.calculateSpiralOffset(currentOffset);
+        let position = Coordinates.calculateSpiralOffset(currentOffset);
         position.x += room.room.controller.pos.x;
         position.y += room.room.controller.pos.y;
 
@@ -70,42 +71,5 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
     room.refresh();
     room.setStrategy(new StrategyPickingRoomStrategy(room));
-  }
-
-  private calculateSpiralOffset(offset) {
-    var r = Math.floor((Math.sqrt(offset + 1) - 1) / 2) + 1;
-    var p = (8 * r * (r - 1)) / 2;
-    var en = r * 2;
-    var a = (1 + offset - p) % (r * 8);
-
-    var pos = [0, 0, r];
-    switch (Math.floor(a / (r * 2))) {
-        case 0:
-            {
-                pos[0] = a - r;
-                pos[1] = -r;
-            }
-            break;
-        case 1:
-            {
-                pos[0] = r;
-                pos[1] = (a % en) - r;
-
-            }
-            break;
-        case 2:
-            {
-                pos[0] = r - (a % en);
-                pos[1] = r;
-            }
-            break;
-        case 3:
-            {
-                pos[0] = -r;
-                pos[1] = r - (a % en);
-            }
-            break;
-    }
-    return { x: pos[0], y: pos[1] };
   }
 }

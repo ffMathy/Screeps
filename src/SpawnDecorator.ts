@@ -1,7 +1,6 @@
 import CreepDecorator from 'CreepDecorator';
 import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
-import ParkingCreepStrategy from 'strategies/creep/ParkingCreepStrategy';
 
 export default class SpawnDecorator {
     private readonly spawnName: string;
@@ -46,7 +45,7 @@ export default class SpawnDecorator {
         return Game.spawns[this.spawn.name].spawning;
     }
 
-    spawnCreep(qualities, roomName: string) {
+    spawnCreep(qualities, _roomName: string) {
         if(this.getSpawnDetails())
             return;
 
@@ -67,12 +66,10 @@ export default class SpawnDecorator {
                     throw new Error('Could not fetch spawned creep.');
 
                 let creepDecorator = new CreepDecorator(this.game, creepSpawned);
-                creepDecorator.setStrategy(new ParkingCreepStrategy(creepDecorator, roomName));
-
                 this.room.creeps.add(creepDecorator);
                 this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
             } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
-                this.room.sayAt(Game.spawns[this.spawnName], '🙁 energy');
+                this.room.sayAt(Game.spawns[this.spawnName], '⚡');
             } else if(spawnResult === ERR_NAME_EXISTS) {
                 nameExistsAlready = true;
             } else {

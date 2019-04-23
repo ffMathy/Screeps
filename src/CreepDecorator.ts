@@ -33,7 +33,7 @@ export default class CreepDecorator {
     opts.visualizePathStyle = { stroke: '#ffffff' };
 
     // let game = GameDecorator.instance;
-    opts.reusePath = 10; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
+    opts.reusePath = 15; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
 
     return this.creep.moveTo(target, opts);
   }
@@ -41,7 +41,7 @@ export default class CreepDecorator {
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
     this.lastStrategyTick = this.game.tickCount;
-    this.creep.memory.strategy = strategy.name;
+    this.creep.memory.strategy = strategy ? strategy.name : '';
   }
 
   updateRoom() {
@@ -69,21 +69,34 @@ export default class CreepDecorator {
       return;
     }
 
-    if(this.strategy) {
-      if(this.creep.room.name !== oldCreep.room.name)
-        this.updateRoom();
+    if(this.creep.room.name !== oldCreep.room.name)
+      this.updateRoom();
 
-      if(!this.lastPosition)
-        this.lastPosition = this.creep.pos;
+    if(!this.lastPosition)
+      this.lastPosition = this.creep.pos;
 
-      let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
-      if(strategyTickDifference < 5)
-        this.say(this.strategy.name, true);
+    let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
+    if(strategyTickDifference < 5)
+      this.say(this.strategy.name, true);
 
-      if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
-        this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
+    if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
+      this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
 
-      this.strategy.tick();
+    if(!this.strategy)
+      return;
+
+    let newStrategy = this.strategy.tick();
+    if(typeof newStrategy === "function") {
+      let newStrategyObject = newStrategy(this);
+      if(newStrategyObject === null) {
+        this.room.creeps.setIdle(this);
+      } else if(typeof newStrategyObject !== "undefined") {
+        this.setStrategy(newStrategyObject);
+      }
+    } else if(newStrategy === null) {
+      this.room.creeps.setIdle(this);
+    } else if(typeof newStrategy !== "undefined") {
+      this.setStrategy(newStrategy);
     }
   }
 }

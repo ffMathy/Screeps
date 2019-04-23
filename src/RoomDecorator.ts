@@ -155,8 +155,6 @@ export default class RoomDecorator {
 
   tick() {
     this.strategy.tick();
-
-    for(let creep of this.creeps.all)
-      creep.tick();
+    this.creeps.tick();
   }
 }

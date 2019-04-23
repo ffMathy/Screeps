@@ -1,9 +1,8 @@
 import CreepDecorator from "CreepDecorator";
-import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
 import GameDecorator from "GameDecorator";
-import Strategy from "strategies/Strategy";
+import { CreepStrategy } from "strategies/Strategy";
 
-export default class HarvestCreepStrategy implements Strategy {
+export default class HarvestCreepStrategy implements CreepStrategy {
   get name() {
     return "harvest";
   }
@@ -15,7 +14,7 @@ export default class HarvestCreepStrategy implements Strategy {
   tick() {
     if(this.creep.creep.carry.energy == this.creep.creep.carryCapacity) {
       GameDecorator.instance.resources.unreserve(this.creep);
-      return this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
+      return null;
     }
 
     let sources = this.creep.room.sources;
@@ -41,9 +40,7 @@ export default class HarvestCreepStrategy implements Strategy {
       }
     } else {
       GameDecorator.instance.resources.unreserve(this.creep);
-
-      //TODO: handle withdrawal from extension.
-      this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
+      return null;
     }
   }
 }
