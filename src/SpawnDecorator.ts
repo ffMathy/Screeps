@@ -6,6 +6,8 @@ import ParkingCreepStrategy from 'strategies/creep/ParkingCreepStrategy';
 export default class SpawnDecorator {
     private readonly spawnName: string;
 
+    private static nameOffset = 0;
+
     constructor(
         private readonly game: GameDecorator,
         public readonly room: RoomDecorator,
@@ -48,31 +50,36 @@ export default class SpawnDecorator {
         if(this.getSpawnDetails())
             return;
 
-        let creepName = 'creep-' + Game.time;
-        let spawnResult = Game.spawns[this.spawnName].spawnCreep(
-            qualities,
-            creepName,
-            {
-                memory: {
-                }
-            });
+        let nameExistsAlready = false;
+        do {
+            let creepName = 'creep-' + (Game.time + SpawnDecorator.nameOffset++);
+            let spawnResult = Game.spawns[this.spawnName].spawnCreep(
+                qualities,
+                creepName,
+                {
+                    memory: {
+                    }
+                });
 
-        if(spawnResult === 0) {
-            let creepSpawned = Game.creeps[creepName];
-            if(!creepSpawned)
-                throw new Error('Could not fetch spawned creep.');
+            if(spawnResult === 0) {
+                let creepSpawned = Game.creeps[creepName];
+                if(!creepSpawned)
+                    throw new Error('Could not fetch spawned creep.');
 
-            let creepDecorator = new CreepDecorator(this.game, creepSpawned);
-            creepDecorator.setStrategy(new ParkingCreepStrategy(creepDecorator, roomName));
+                let creepDecorator = new CreepDecorator(this.game, creepSpawned);
+                creepDecorator.setStrategy(new ParkingCreepStrategy(creepDecorator, roomName));
 
-            this.game.creeps.add(creepDecorator);
+                this.game.creeps.add(creepDecorator);
 
-            this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
-        } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
-            this.room.sayAt(Game.spawns[this.spawnName], '🙁 energy');
-        } else {
-            throw new Error('Could not spawn creep: ' + spawnResult);
-        }
+                this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
+            } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
+                this.room.sayAt(Game.spawns[this.spawnName], '🙁 energy');
+            } else if(spawnResult === ERR_NAME_EXISTS) {
+                nameExistsAlready = true;
+            } else {
+                throw new Error('Could not spawn creep: ' + spawnResult);
+            }
+        } while(nameExistsAlready);
     }
 
     maintainPopulation() {
