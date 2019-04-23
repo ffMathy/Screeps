@@ -22,7 +22,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
         if(+level > room.room.controller.level)
           break;
 
-        totalAvailable += +CONTROLLER_STRUCTURES[typeToBuild][level];
+        totalAvailable = +CONTROLLER_STRUCTURES[typeToBuild][level];
       }
 
       let countBuilt = structuresOfType.length + constructionSitesOfType.length;
