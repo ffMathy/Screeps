@@ -1,10 +1,9 @@
 import SpawnDecorator from "SpawnDecorator";
 import GameDecorator from "GameDecorator";
 import RoomsDecorator from "RoomsDecorator";
-import CreepDecorator from "CreepDecorator";
-import Arrays from "helpers/Arrays";
 import TerrainDecorator from "TerrainDecorator";
-import StrategyPickingRoomStrategy from "strategies/room/StrategyPickingRoomStrategy";
+import ConstructStructuresRoomStrategy from "strategies/room/ConstructStructuresRoomStrategy";
+import RoomCreepsDecorator from "RoomCreepsDecorator";
 
 export interface RoomStrategy {
   readonly name: string;
@@ -16,9 +15,10 @@ export default class RoomDecorator {
   public sources: Source[];
   public constructionSites: ConstructionSite[];
   public spawns: SpawnDecorator[];
-  public creeps: CreepDecorator[];
   public terrain: TerrainDecorator;
   public transferrableStructures: (Structure | Spawn | Tower)[];
+
+  public readonly creeps: RoomCreepsDecorator;
 
   private strategy: RoomStrategy;
 
@@ -27,12 +27,6 @@ export default class RoomDecorator {
 
   private _unexploredNeighbourNameOffset: number;
   private _unexploredNeighbourNames: string[];
-
-  private _isPopulationMaintained: boolean;
-
-  public get isPopulationMaintained() {
-    return this._isPopulationMaintained;
-  }
 
   public get unexploredNeighbourNames() {
     return this._unexploredNeighbourNames;
@@ -55,33 +49,13 @@ export default class RoomDecorator {
     private readonly rooms: RoomsDecorator,
     public readonly roomName: string)
   {
-    this.creeps = [];
+    this.creeps = new RoomCreepsDecorator(rooms, this);
     this.constructionSites = [];
-
-    this._isPopulationMaintained = false;
 
     this._unexploredNeighbourNameOffset = 0;
     this._unexploredNeighbourNames = [];
     this._neighbouringRoomsByDirection = {};
     this._allNeighbouringRooms = [];
-
-    this.strategy = new StrategyPickingRoomStrategy(this);
-  }
-
-  private refreshPopulationMaintenanceStatus() {
-    this._isPopulationMaintained = this.creeps.length >= 15;
-
-    if(this._isPopulationMaintained || !this.room || !this.room.controller) {
-      Arrays.remove(this.rooms.lowPopulation, this);
-
-      if(this.room)
-        this.sayAt(this.room.controller, '😃');
-    } else {
-      Arrays.add(this.rooms.lowPopulation, this);
-
-      if(this.room)
-        this.sayAt(this.room.controller, '😟');
-    }
   }
 
   createConstructionSite(x: number, y: number, structureType: string): number {
@@ -94,30 +68,10 @@ export default class RoomDecorator {
 
   initialize() {
     this.terrain = new TerrainDecorator(this, (this.game.game.map as any).getRoomTerrain(this.roomName));
-
-    for (let creep of this.game.creeps.all) {
-      if (creep.creep.room.name === this.roomName)
-        this.addCreep(creep);
-    }
-
     this.sources = this.isClaimed ? this.room.find(FIND_SOURCES) : [];
 
     this.refresh();
-  }
-
-  addCreep(creep: CreepDecorator) {
-    if (this.creeps.indexOf(creep) === -1) {
-      this.creeps.push(creep);
-
-      this.refreshPopulationMaintenanceStatus();
-    }
-  }
-
-  removeCreep(creep: CreepDecorator) {
-    if (this.creeps.indexOf(creep) > -1) {
-      this.creeps.splice(this.creeps.indexOf(creep), 1);
-      this.refreshPopulationMaintenanceStatus();
-    }
+    this.strategy = new ConstructStructuresRoomStrategy(this);
   }
 
   private refreshConstructionSites() {
@@ -133,8 +87,6 @@ export default class RoomDecorator {
     this.spawns = this.isClaimed ? this.room
       .find(FIND_MY_SPAWNS)
       .map((x: Spawn) => new SpawnDecorator(this.game, this, x)) : [];
-
-    this.refreshPopulationMaintenanceStatus();
   }
 
   getRandomUnexploredNeighbourName() {
@@ -176,7 +128,10 @@ export default class RoomDecorator {
       text,
       object.pos.x + 1,
       object.pos.y,
-      { align: 'left', opacity: 1 });
+      {
+        align: 'left',
+        opacity: 1
+      });
   }
 
   //TODO: optimize this
@@ -200,5 +155,8 @@ export default class RoomDecorator {
 
   tick() {
     this.strategy.tick();
+
+    for(let creep of this.creeps.all)
+      creep.tick();
   }
 }

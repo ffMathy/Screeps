@@ -1,14 +1,11 @@
 import CreepDecorator from "CreepDecorator";
-import ParkingCreepStrategy from "./ParkingCreepStrategy";
 import ClaimCreepStrategy from "./ClaimCreepStrategy";
-import RoomDecorator from "RoomDecorator";
-import Strategy from "strategies/Strategy";
+import { CreepStrategy } from "strategies/Strategy";
 
-export default class ExploreCreepStrategy implements Strategy {
+export default class ExploreCreepStrategy implements CreepStrategy {
   private target: RoomPosition;
 
   private fromRoomName: string;
-  private fromRoom: RoomDecorator;
 
   get name() {
     return "explore";
@@ -25,19 +22,14 @@ export default class ExploreCreepStrategy implements Strategy {
     if(!this.target) {
       this.target = creep.creep.pos.findClosestByPath(creep.creep.room.findExitTo(this.roomName));
       this.fromRoomName = creep.creep.room.name;
-      this.fromRoom = creep.room;
 
       if(this.roomName === this.fromRoomName)
-        return creep.setStrategy(new ClaimCreepStrategy(
-          creep,
-          this.roomName));
+        return new ClaimCreepStrategy(creep);
     }
 
     if(this.fromRoomName !== creep.creep.room.name) {
       creep.moveTo(creep.creep.room.controller);
-      return creep.setStrategy(new ClaimCreepStrategy(
-        creep,
-        creep.creep.room.name));
+      return new ClaimCreepStrategy(creep);
     }
 
     if(!this.target)

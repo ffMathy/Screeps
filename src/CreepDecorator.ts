@@ -1,7 +1,6 @@
 import RoomDecorator from 'RoomDecorator';
-import StrategyPickingCreepStrategy from 'strategies/creep/StrategyPickingCreepStrategy';
 import GameDecorator from 'GameDecorator';
-import Strategy from 'strategies/Strategy';
+import { CreepStrategy } from 'strategies/Strategy';
 
 export interface CreepMemory {
   reservationId: string;
@@ -10,7 +9,7 @@ export interface CreepMemory {
 export default class CreepDecorator {
   public room: RoomDecorator;
 
-  private strategy: Strategy;
+  private strategy: CreepStrategy;
   private lastStrategyTick: number;
   private lastPosition: RoomPosition;
 
@@ -23,8 +22,8 @@ export default class CreepDecorator {
     public creep: Creep)
   {
     this.room = game.rooms.fromCreep(creep);
-    this.room.addCreep(this);
-    this.strategy = new StrategyPickingCreepStrategy(this);
+    this.room.creeps.add(this);
+    this.strategy = null;
   }
 
   moveTo(target: RoomPosition | { pos: RoomPosition; }, opts?: MoveToOpts) {
@@ -39,16 +38,24 @@ export default class CreepDecorator {
     return this.creep.moveTo(target, opts);
   }
 
-  setStrategy(strategy: Strategy) {
+  setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
     this.lastStrategyTick = this.game.tickCount;
     this.creep.memory.strategy = strategy.name;
   }
 
   updateRoom() {
-    this.room.removeCreep(this);
+    this.room.creeps.remove(this);
     this.room = this.game.rooms.fromCreep(this.creep);
-    this.room.addCreep(this);
+    this.room.creeps.add(this);
+  }
+
+  say(message: string, toPublic?: boolean): number {
+    try {
+      return this.creep.say(message, toPublic);
+    } catch(e) {
+      //ignore errors due to 500kb size limit.
+    }
   }
 
   tick() {
@@ -58,24 +65,25 @@ export default class CreepDecorator {
 
     if(!this.creep || oldCreep.ticksToLive <= 3) {
       this.game.resources.unreserve(oldCreep);
-      this.game.creeps.remove(this);
+      this.room.creeps.remove(this);
       return;
     }
 
-    if(this.creep.room.name !== oldCreep.room.name) {
-      this.updateRoom();
+    if(this.strategy) {
+      if(this.creep.room.name !== oldCreep.room.name)
+        this.updateRoom();
+
+      if(!this.lastPosition)
+        this.lastPosition = this.creep.pos;
+
+      let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
+      if(strategyTickDifference < 5)
+        this.say(this.strategy.name, true);
+
+      if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
+        this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
+
+      this.strategy.tick();
     }
-
-    if(!this.lastPosition)
-      this.lastPosition = this.creep.pos;
-
-    let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
-    if(strategyTickDifference < 10)
-      this.creep.say(this.strategy.name, true);
-
-    if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
-      this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
-
-    this.strategy.tick();
   }
 }

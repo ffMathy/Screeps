@@ -1,57 +1,57 @@
-import CreepDecorator from "CreepDecorator";
-import BuildingCreepStrategy from "./BuildingCreepStrategy";
-import HarvestCreepStrategy from "./HarvestCreepStrategy";
-import TransferCreepStrategy from "./TransferCreepStrategy";
-import UpgradeCreepStrategy from "./UpgradeCreepStrategy";
-import ParkingCreepStrategy from "./ParkingCreepStrategy";
-import GameDecorator from "GameDecorator";
-import ExploreCreepStrategy from "./ExploreCreepStrategy";
-import Strategy from "strategies/Strategy";
+// import CreepDecorator from "CreepDecorator";
+// import BuildingCreepStrategy from "./BuildingCreepStrategy";
+// import HarvestCreepStrategy from "./HarvestCreepStrategy";
+// import TransferCreepStrategy from "./TransferCreepStrategy";
+// import UpgradeCreepStrategy from "./UpgradeCreepStrategy";
+// import ParkingCreepStrategy from "./ParkingCreepStrategy";
+// import GameDecorator from "GameDecorator";
+// import ExploreCreepStrategy from "./ExploreCreepStrategy";
+// import { CreepStrategy } from "strategies/Strategy";
 
-export default class StrategyPickingCreepStrategy implements Strategy {
-  get name() {
-    return "look";
-  }
+// export default class StrategyPickingCreepStrategy implements CreepStrategy {
+//   get name() {
+//     return "look";
+//   }
 
-  constructor(
-    private readonly creep: CreepDecorator)
-  { }
+//   constructor(
+//     private readonly creep: CreepDecorator)
+//   { }
 
-  tick() {
-    let creep = this.creep;
-    let energyCarry = creep.creep.carry.energy;
+//   tick() {
+//     let creep = this.creep;
+//     let energyCarry = creep.creep.carry.energy;
 
-    let hasClaim = !!creep.creep.body.find(x => x.type === CLAIM);
-    if(hasClaim) {
-      let roomToExplore = creep.room.unexploredNeighbourNames.length > 0 ?
-        creep.room.getRandomUnexploredNeighbourName() :
-        creep.room.roomName;
-      return creep.setStrategy(new ExploreCreepStrategy(creep, roomToExplore));
-    } else if(creep.room.room.controller && !creep.room.room.controller.my) {
-      return creep.setStrategy(new ParkingCreepStrategy(creep, GameDecorator.instance.rooms.all.find(x => x.room.controller && x.room.controller.my).roomName));
-    }
+//     let hasClaim = !!creep.creep.body.find(x => x.type === CLAIM);
+//     if(hasClaim) {
+//       let roomToExplore = creep.room.unexploredNeighbourNames.length > 0 ?
+//         creep.room.getRandomUnexploredNeighbourName() :
+//         creep.room.roomName;
+//       return creep.setStrategy(new ExploreCreepStrategy(creep, roomToExplore));
+//     } else if(creep.room.room.controller && !creep.room.room.controller.my) {
+//       return creep.setStrategy(new ParkingCreepStrategy(creep, GameDecorator.instance.rooms.all.find(x => x.room.controller && x.room.controller.my).roomName));
+//     }
 
-    let isEmpty = energyCarry == 0;
-    let availableSources = creep.room.sources.filter(x => !GameDecorator.instance.resources.isReserved(x.id));
-    if(isEmpty && availableSources.length > 0)
-      return creep.setStrategy(new HarvestCreepStrategy(creep));
+//     let isEmpty = energyCarry == 0;
+//     let availableSources = creep.room.sources.filter(x => !GameDecorator.instance.resources.isReserved(x.id));
+//     if(isEmpty && availableSources.length > 0)
+//       return creep.setStrategy(new HarvestCreepStrategy(creep));
 
-    if(!isEmpty) {
-      if(creep.room.room && (creep.room.room.controller.level === 0 || (creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000))) {
-        return creep.setStrategy(new UpgradeCreepStrategy(creep));
-      }
+//     if(!isEmpty) {
+//       if(creep.room.room && (creep.room.room.controller.level === 0 || (creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000))) {
+//         return creep.setStrategy(new UpgradeCreepStrategy(creep));
+//       }
 
-      let availableTransferSites = creep.room.getTransferrableStructures();
-      if(availableTransferSites.length > 0)
-        return creep.setStrategy(new TransferCreepStrategy(creep, availableTransferSites));
+//       let availableTransferSites = creep.room.getTransferrableStructures();
+//       if(availableTransferSites.length > 0)
+//         return creep.setStrategy(new TransferCreepStrategy(creep, availableTransferSites));
 
-      let availableConstructionSites = creep.room.constructionSites;
-      if(availableConstructionSites.length > 0)
-        return creep.setStrategy(new BuildingCreepStrategy(creep));
+//       let availableConstructionSites = creep.room.constructionSites;
+//       if(availableConstructionSites.length > 0)
+//         return creep.setStrategy(new BuildingCreepStrategy(creep));
 
-      return creep.setStrategy(new UpgradeCreepStrategy(creep));
-    }
+//       return creep.setStrategy(new UpgradeCreepStrategy(creep));
+//     }
 
-    return creep.setStrategy(new ParkingCreepStrategy(creep));
-  }
-}
+//     return creep.setStrategy(new ParkingCreepStrategy(creep));
+//   }
+// }

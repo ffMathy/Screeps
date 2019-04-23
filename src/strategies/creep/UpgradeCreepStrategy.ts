@@ -1,8 +1,7 @@
 import CreepDecorator from "CreepDecorator";
-import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
-import Strategy from "strategies/Strategy";
+import { CreepStrategy } from "strategies/Strategy";
 
-export default class UpgradeCreepStrategy implements Strategy {
+export default class UpgradeCreepStrategy implements CreepStrategy {
   get name() {
     return "upgrade";
   }
@@ -14,7 +13,7 @@ export default class UpgradeCreepStrategy implements Strategy {
   tick() {
     let creep = this.creep;
     if(creep.creep.carry.energy == 0)
-      return creep.setStrategy(new StrategyPickingCreepStrategy(creep));
+      return null;
 
     //TODO: claim controller if level 0
     if (creep.creep.upgradeController(creep.creep.room.controller) == ERR_NOT_IN_RANGE) {

@@ -69,8 +69,7 @@ export default class SpawnDecorator {
                 let creepDecorator = new CreepDecorator(this.game, creepSpawned);
                 creepDecorator.setStrategy(new ParkingCreepStrategy(creepDecorator, roomName));
 
-                this.game.creeps.add(creepDecorator);
-
+                this.room.creeps.add(creepDecorator);
                 this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
             } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
                 this.room.sayAt(Game.spawns[this.spawnName], '🙁 energy');
@@ -86,12 +85,10 @@ export default class SpawnDecorator {
         if(this.getSpawnDetails())
             return;
 
-        if(this.room.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
+        if(!this.room.creeps.isPopulationMaintained) {
+            this.spawnCreep([MOVE, CARRY, WORK], this.room.roomName);
+        } else if(this.room.creeps.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
             this.spawnCreep([CLAIM, MOVE], this.room.getRandomUnexploredNeighbourName());
-        } else if(this.game.rooms.lowPopulation.length > 0) {
-            for(let room of this.game.rooms.lowPopulation) {
-                this.spawnCreep([MOVE, MOVE, CARRY, WORK], room.roomName);
-            }
         }
     }
 

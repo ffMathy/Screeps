@@ -1,8 +1,7 @@
 import CreepDecorator from "CreepDecorator";
-import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
-import Strategy from "strategies/Strategy";
+import { CreepStrategy } from "strategies/Strategy";
 
-export default class BuildingCreepStrategy implements Strategy {
+export default class BuildingCreepStrategy implements CreepStrategy {
   get name() {
     return "build";
   }
@@ -13,7 +12,7 @@ export default class BuildingCreepStrategy implements Strategy {
 
   tick() {
     if(this.creep.creep.carry.energy == 0)
-      return this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
+      return null;
 
     var target = this.creep.room.constructionSites[0];
     if (target) {
@@ -23,11 +22,11 @@ export default class BuildingCreepStrategy implements Strategy {
         target = Game.getObjectById(target.id);
         if(!target || target.progress >= target.progressTotal) {
           this.creep.room.refresh();
-          return this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
+          return null;
         }
       }
     } else {
-      return this.creep.setStrategy(new StrategyPickingCreepStrategy(this.creep));
+      return null;
     }
   }
 

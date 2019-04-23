@@ -1,16 +1,13 @@
 import CreepDecorator from "CreepDecorator";
-import StrategyPickingCreepStrategy from "./StrategyPickingCreepStrategy";
-import RoomDecorator from "RoomDecorator";
-import Strategy from "strategies/Strategy";
+import { CreepStrategy } from "strategies/Strategy";
 
-export default class ClaimCreepStrategy implements Strategy {
+export default class ClaimCreepStrategy implements CreepStrategy {
   get name() {
     return "claim";
   }
 
   constructor(
-    private readonly creep:CreepDecorator,
-    private readonly targetRoomName: string) {
+    private readonly creep:CreepDecorator) {
   }
 
   tick() {
@@ -19,9 +16,11 @@ export default class ClaimCreepStrategy implements Strategy {
     let claimResult = creep.creep.claimController(controller);
     if(claimResult === ERR_NOT_IN_RANGE) {
       creep.moveTo(controller);
+      return void 0;
     } else if(claimResult === ERR_INVALID_TARGET) {
       creep.creep.suicide();
-    } else {
+      return void 0;
+    } else if(claimResult !== OK) {
       throw new Error('Invalid claim result: ' + claimResult);
     }
   }
