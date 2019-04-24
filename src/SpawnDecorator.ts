@@ -1,7 +1,9 @@
 import CreepDecorator from 'CreepDecorator';
 import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
+import profile from 'profiler';
 
+@profile
 export default class SpawnDecorator {
     private readonly spawnName: string;
 

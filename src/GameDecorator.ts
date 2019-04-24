@@ -1,7 +1,9 @@
 import Resources from "Resources";
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
+import profile from "profiler";
 
+@profile
 export default class GameDecorator {
   private _usedCpu: number;
 

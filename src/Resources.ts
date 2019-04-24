@@ -1,5 +1,6 @@
 import CreepDecorator from "CreepDecorator";
 import RoomsDecorator from "RoomsDecorator";
+import profile from "profiler";
 
 interface Resource {
   terrainCapacity: number;
@@ -35,6 +36,7 @@ export default class Resources {
     }
   }
 
+  @profile
   reserve(creep: CreepDecorator, resourceId: string) {
     if (this.isReserved(resourceId))
       return false;
@@ -52,6 +54,7 @@ export default class Resources {
     creep.room.sayAt(Game.getObjectById(resource.id), resource.reservationCount);
   }
 
+  @profile
   unreserve(creep: CreepDecorator | Creep) {
     let resourceId = creep.memory.reservationId;
     if(!resourceId)
@@ -66,6 +69,7 @@ export default class Resources {
       this.announceReservationCount(creep, this.resources[resourceId]);
   }
 
+  @profile
   isReserved(resourceId: string) {
     let resource = this.resources[resourceId];
     return resource.reservationCount >= resource.terrainCapacity;

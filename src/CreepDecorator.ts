@@ -1,11 +1,13 @@
 import RoomDecorator from 'RoomDecorator';
 import GameDecorator from 'GameDecorator';
 import { CreepStrategy } from 'strategies/Strategy';
+import profile from 'profiler';
 
 export interface CreepMemory {
   reservationId: string;
 }
 
+@profile
 export default class CreepDecorator {
   public room: RoomDecorator;
 
@@ -32,8 +34,10 @@ export default class CreepDecorator {
 
     opts.visualizePathStyle = { stroke: '#ffffff' };
 
-    // let game = GameDecorator.instance;
-    opts.reusePath = 15; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
+    opts.ignoreRoads = false;
+    opts.ignoreCreeps = false;
+    opts.ignoreDestructibleStructures = true;
+    opts.reusePath = 3; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
 
     return this.creep.moveTo(target, opts);
   }

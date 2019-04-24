@@ -4,6 +4,7 @@ import RoomsDecorator from "RoomsDecorator";
 import TerrainDecorator from "TerrainDecorator";
 import ConstructStructuresRoomStrategy from "strategies/room/ConstructStructuresRoomStrategy";
 import RoomCreepsDecorator from "RoomCreepsDecorator";
+import profile from "profiler";
 
 export interface RoomStrategy {
   readonly name: string;
@@ -11,6 +12,7 @@ export interface RoomStrategy {
   tick();
 }
 
+@profile
 export default class RoomDecorator {
   public sources: Source[];
   public constructionSites: ConstructionSite[];

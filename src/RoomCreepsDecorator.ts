@@ -8,8 +8,9 @@ import HarvestCreepStrategy from 'strategies/creep/HarvestCreepStrategy';
 import UpgradeCreepStrategy from 'strategies/creep/UpgradeCreepStrategy';
 import TransferCreepStrategy from 'strategies/creep/TransferCreepStrategy';
 import BuildingCreepStrategy from 'strategies/creep/BuildingCreepStrategy';
-import Coordinates from 'helpers/Coordinates';
+import profile from 'profiler';
 
+@profile
 export default class RoomCreepsDecorator {
   public all: CreepDecorator[];
   public active: CreepDecorator[];

@@ -1,6 +1,8 @@
 import RoomDecorator from "RoomDecorator";
 import GameDecorator from "GameDecorator";
+import profile from "profiler";
 
+@profile
 export default class RoomsDecorator {
   public readonly byName: { [name: string]: RoomDecorator};
   public readonly all: RoomDecorator[];

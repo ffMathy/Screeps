@@ -1,9 +1,11 @@
 import RoomDecorator from "RoomDecorator";
+import profile from "profiler";
 
 declare interface Terrain {
   get(x: number, y: number): number
 }
 
+@profile
 export default class TerrainDecorator {
   private readonly tilePopularity: Array<number>;
   private readonly tileLastIncreaseTick: Array<number>;
