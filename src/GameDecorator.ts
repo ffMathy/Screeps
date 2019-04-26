@@ -5,8 +5,6 @@ import profile from "profiler";
 
 @profile
 export default class GameDecorator {
-  private _usedCpu: number;
-
   public readonly availableCpu: number;
 
   public readonly resources: Resources;
@@ -23,10 +21,6 @@ export default class GameDecorator {
       this._instance = new GameDecorator(Game);
 
     return this._instance;
-  }
-
-  public get usedCpu() {
-    return this._usedCpu;
   }
 
   constructor(public game: Game) {
@@ -48,7 +42,5 @@ export default class GameDecorator {
     this.game = Game;
 
     this.rooms.tick();
-
-    this._usedCpu = Game.cpu.getUsed();
   }
 }

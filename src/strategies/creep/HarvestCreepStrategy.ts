@@ -1,7 +1,9 @@
 import CreepDecorator from "CreepDecorator";
 import GameDecorator from "GameDecorator";
 import { CreepStrategy } from "strategies/Strategy";
+import profile from "profiler";
 
+@profile
 export default class HarvestCreepStrategy implements CreepStrategy {
   get name() {
     return "harvest";
@@ -21,7 +23,7 @@ export default class HarvestCreepStrategy implements CreepStrategy {
     let reservedId = this.creep.memory.reservationId;
     let reservedSource: Source = null;
     if(reservedId) {
-      reservedSource = sources.filter(x => x.id === reservedId)[0];
+      reservedSource = sources.find(x => x.id === reservedId);
     }
 
     if(!reservedSource) {

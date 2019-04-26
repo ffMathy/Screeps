@@ -79,15 +79,15 @@ export default class CreepDecorator {
     if(!this.lastPosition)
       this.lastPosition = this.creep.pos;
 
+    if(!this.strategy)
+      return;
+
     let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
     if(strategyTickDifference < 5)
       this.say(this.strategy.name, true);
 
     if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
       this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
-
-    if(!this.strategy)
-      return;
 
     let newStrategy = this.strategy.tick();
     if(typeof newStrategy === "function") {
