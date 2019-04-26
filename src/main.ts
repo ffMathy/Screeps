@@ -7,6 +7,10 @@ import * as Profiler from "profiler";
 
 global['gameDecorator'] = GameDecorator.instance;
 global['roomByName'] = (name: string) => GameDecorator.instance.rooms.byName[name];
+global['killAllCreeps'] = () => {
+    for(let key in Game.creeps)
+        Game.creeps[key].suicide();
+};
 
 const profiler = Profiler.init();
 profiler.stop();

@@ -20,6 +20,7 @@ export default class RoomCreepsDecorator {
   private _strategyOffset: number;
 
   public get isPopulationMaintained() {
+    return this.all.length >= 3;
     return this.idle.length > this.active.length / 3;
   }
 
@@ -84,7 +85,7 @@ export default class RoomCreepsDecorator {
     let isEmpty = energyCarry === 0;
     let availableSource = creep.room.sources.find(x => !GameDecorator.instance.resources.isReserved(x.id));
     if (isEmpty && availableSource)
-      possibilities.push(new WalkToCreepStrategy(creep, availableSource.id, new HarvestCreepStrategy(creep, availableSource)));
+      possibilities.push(new WalkToCreepStrategy(creep, availableSource.id, new HarvestCreepStrategy(creep, availableSource.id)));
 
     if (!isEmpty) {
       if (creep.room.room && (creep.room.room.controller.level === 0 || (creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000))) {

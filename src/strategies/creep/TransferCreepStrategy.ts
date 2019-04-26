@@ -16,8 +16,6 @@ export default class TransferCreepStrategy implements CreepStrategy {
   }
 
   tick() {
-    console.log('transfer tick');
-
     let creep = this.creep;
     if(creep.creep.carry.energy == 0)
       return null;

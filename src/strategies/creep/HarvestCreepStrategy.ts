@@ -1,7 +1,7 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 import profile from "profiler";
-import GameDecorator from "GameDecorator";
+// import GameDecorator from "GameDecorator";
 
 @profile
 export default class HarvestCreepStrategy implements CreepStrategy {
@@ -11,12 +11,12 @@ export default class HarvestCreepStrategy implements CreepStrategy {
 
   constructor(
     private readonly creep: CreepDecorator,
-    private readonly reservedSource: Source
+    private readonly reservedSourceId: string
   ) {}
 
   tick() {
     if(this.creep.creep.carry.energy == this.creep.creep.carryCapacity) {
-      GameDecorator.instance.resources.unreserve(this.creep);
+      // GameDecorator.instance.resources.unreserve(this.creep);
       return null;
     }
 
@@ -38,7 +38,9 @@ export default class HarvestCreepStrategy implements CreepStrategy {
     //   }
     // }
 
-    let harvestResult = this.creep.creep.harvest(this.reservedSource);
+    let harvestResult = this.creep.creep.harvest(
+      Game.getObjectById(this.reservedSourceId)
+    );
     if(harvestResult !== OK) {
       throw new Error('Harvest error: ' + harvestResult);
     }

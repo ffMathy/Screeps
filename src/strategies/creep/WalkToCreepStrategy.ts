@@ -22,7 +22,22 @@ export default class WalkToCreepStrategy implements CreepStrategy {
       return this.successorStrategy;
     }
 
-    let moveResult = this.creep.creep.moveByPath([path.nextStep.position]);
+    if(this.creep.creep.fatigue !== 0)
+      return;
+
+    let direction = path.direction;
+    if(path.nextStep.creep) {
+      direction = (direction + 1) % 9;
+      if(direction === 0)
+        direction++;
+    }
+
+    let moveResult = this.creep.creep.move(direction);
+    if(moveResult === ERR_BUSY) {
+      //still being spawned - ignore.
+      return;
+    }
+
     if(moveResult !== OK) {
       throw new Error('Move error: ' + moveResult);
     }

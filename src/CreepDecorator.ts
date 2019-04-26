@@ -69,11 +69,7 @@ export default class CreepDecorator {
   }
 
   say(message: string, toPublic?: boolean): number {
-    try {
-      return this.creep.say(message, toPublic);
-    } catch(e) {
-      //ignore errors due to 500kb size limit.
-    }
+    return this.creep.say(message, toPublic);
   }
 
   tick() {
@@ -91,8 +87,10 @@ export default class CreepDecorator {
     if(this.creep.room.name !== oldCreep.room.name)
       this.updateRoom();
 
-    if(!this.tile || this.creep.pos.x !== this.tile.position.x || this.creep.pos.y !== this.tile.position.y)
+    if(!this.tile || this.creep.pos.x !== this.tile.position.x || this.creep.pos.y !== this.tile.position.y) {
       this.tile = this.room.terrain.getTileAt(this.creep.pos.x, this.creep.pos.y);
+      this.tile.creep = this;
+    }
 
     if(!this.lastPosition)
       this.lastPosition = this.creep.pos;
@@ -101,7 +99,7 @@ export default class CreepDecorator {
       return;
 
     let strategyTickDifference = this.game.tickCount - this.lastStrategyTick;
-    if(strategyTickDifference < 5)
+    if(strategyTickDifference < 100)
       this.say(this.strategy.name, true);
 
     if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)

@@ -1,6 +1,7 @@
 import RoomDecorator from "RoomDecorator";
 import profile from "profiler";
 import CreepDecorator from "CreepDecorator";
+import Coordinates, { Direction } from "helpers/Coordinates";
 
 declare interface Terrain {
   get(x: number, y: number): number
@@ -17,7 +18,8 @@ export class TileState {
   private readonly pathsTo: {
     [resourceName: string]: {
       distance: number,
-      nextStep: TileState
+      nextStep: TileState,
+      direction: Direction
     }
   } = {};
 
@@ -37,6 +39,9 @@ export class TileState {
       return path;
 
     let target = Game.getObjectById(objectId) as Source;
+    if(!target)
+      throw new Error('Walk target with ID ' + objectId + ' not found.');
+
     let steps = this.terrain.room.room.findPath(
       this.position,
       target.pos);
@@ -51,7 +56,8 @@ export class TileState {
 
     this.pathsTo[objectId] = hasReachedDestination ? null : {
       distance: steps.length,
-      nextStep: nextStep
+      nextStep: nextStep,
+      direction: Coordinates.directionFromCoordinates(this.position, nextStep.position)
     };
 
     return this.pathsTo[objectId];
