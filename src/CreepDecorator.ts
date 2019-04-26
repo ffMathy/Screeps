@@ -2,6 +2,7 @@ import RoomDecorator from 'RoomDecorator';
 import GameDecorator from 'GameDecorator';
 import { CreepStrategy } from 'strategies/Strategy';
 import profile from 'profiler';
+import { TileState } from 'TerrainDecorator';
 
 export interface CreepMemory {
   reservationId: string;
@@ -10,6 +11,7 @@ export interface CreepMemory {
 @profile
 export default class CreepDecorator {
   public room: RoomDecorator;
+  public tile: TileState;
 
   private strategy: CreepStrategy;
   private lastStrategyTick: number;
@@ -28,19 +30,31 @@ export default class CreepDecorator {
     this.strategy = null;
   }
 
-  moveTo(target: RoomPosition | { pos: RoomPosition; }, opts?: MoveToOpts) {
-    if(!opts)
-      opts = {};
+  // moveTo(target: RoomPosition | { pos: RoomPosition; }, opts?: MoveToOpts) {
+  //   if(!opts)
+  //     opts = {};
 
-    opts.visualizePathStyle = { stroke: '#ffffff' };
+  //   opts.visualizePathStyle = { stroke: '#ffffff' };
 
-    opts.ignoreRoads = false;
-    opts.ignoreCreeps = false;
-    opts.ignoreDestructibleStructures = true;
-    opts.reusePath = 3; //game.usedCpu < game.availableCpu / 2 ? 25 : 1;
+  //   opts.ignoreRoads = true;
+  //   opts.ignoreCreeps = true;
+  //   opts.ignoreDestructibleStructures = true;
+  //   opts.reusePath = 1000;
+  //   opts.noPathFinding = true;
+  //   opts.maxRooms = 0;
 
-    return this.creep.moveTo(target, opts);
-  }
+  //   let moveResult = this.creep.moveTo(target, opts);
+  //   if(moveResult === ERR_NOT_FOUND) {
+  //     console.log('recalculate', this.creep.name, Game.time);
+  //     this.say('recalculate');
+  //     opts.noPathFinding = false;
+  //     moveResult = this.creep.moveTo(target, opts);
+  //   } else if(moveResult !== 0) {
+  //     console.log('move error', moveResult);
+  //   }
+
+  //   return moveResult;
+  // }
 
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
@@ -70,11 +84,15 @@ export default class CreepDecorator {
     if(!this.creep || oldCreep.ticksToLive <= 3) {
       this.game.resources.unreserve(oldCreep);
       this.room.creeps.remove(this);
+      delete Memory.creeps[this.creep.name];
       return;
     }
 
     if(this.creep.room.name !== oldCreep.room.name)
       this.updateRoom();
+
+    if(!this.tile || this.creep.pos.x !== this.tile.position.x || this.creep.pos.y !== this.tile.position.y)
+      this.tile = this.room.terrain.getTileAt(this.creep.pos.x, this.creep.pos.y);
 
     if(!this.lastPosition)
       this.lastPosition = this.creep.pos;

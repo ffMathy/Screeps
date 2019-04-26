@@ -18,14 +18,15 @@ export default class BuildingCreepStrategy implements CreepStrategy {
 
     var target = this.creep.room.constructionSites[0];
     if (target) {
-      if (this.creep.creep.build(target) == ERR_NOT_IN_RANGE) {
-        this.creep.moveTo(target);
-      } else {
+      let buildResult = this.creep.creep.build(target);
+      if (buildResult == OK) {
         target = Game.getObjectById(target.id);
         if(!target || target.progress >= target.progressTotal) {
           this.creep.room.refresh();
           return null;
         }
+      } else {
+        throw new Error('Build error: ' + buildResult);
       }
     } else {
       return null;

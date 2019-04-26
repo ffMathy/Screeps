@@ -9,6 +9,7 @@ import UpgradeCreepStrategy from 'strategies/creep/UpgradeCreepStrategy';
 import TransferCreepStrategy from 'strategies/creep/TransferCreepStrategy';
 import BuildingCreepStrategy from 'strategies/creep/BuildingCreepStrategy';
 import profile from 'profiler';
+import WalkToCreepStrategy from 'strategies/creep/WalkToCreepStrategy';
 
 @profile
 export default class RoomCreepsDecorator {
@@ -19,6 +20,7 @@ export default class RoomCreepsDecorator {
   private _strategyOffset: number;
 
   public get isPopulationMaintained() {
+    return this.all.length >= 1;
     return this.idle.length > this.active.length / 3;
   }
 
@@ -80,25 +82,26 @@ export default class RoomCreepsDecorator {
 
     let possibilities = new Array<CreepStrategy>();
 
-    let isEmpty = energyCarry == 0;
-    let availableSources = creep.room.sources.filter(x => !GameDecorator.instance.resources.isReserved(x.id));
-    if (isEmpty && availableSources.length > 0)
-      possibilities.push(new HarvestCreepStrategy(creep));
+    let isEmpty = energyCarry === 0;
+    let availableSource = creep.room.sources.find(x => !GameDecorator.instance.resources.isReserved(x.id));
+    if (isEmpty && availableSource)
+      possibilities.push(new WalkToCreepStrategy(creep, availableSource.id, new HarvestCreepStrategy(creep, availableSource)));
 
     if (!isEmpty) {
       if (creep.room.room && (creep.room.room.controller.level === 0 || (creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000))) {
-        possibilities.push(new UpgradeCreepStrategy(creep));
+        possibilities.push(new WalkToCreepStrategy(creep, creep.room.room.controller.id, new UpgradeCreepStrategy(creep)));
       }
 
-      let availableTransferSites = creep.room.getTransferrableStructures();
-      if (availableTransferSites.length > 0)
-        possibilities.push(new TransferCreepStrategy(creep, availableTransferSites));
+      let availableTransferSite = creep.room.getTransferrableStructures()[0];
+      if (availableTransferSite)
+        possibilities.push(new WalkToCreepStrategy(creep, availableTransferSite.id, new TransferCreepStrategy(creep, availableTransferSite.id)));
 
-      let availableConstructionSites = creep.room.constructionSites;
-      if (availableConstructionSites.length > 0)
-        possibilities.push(new BuildingCreepStrategy(creep));
+      let availableConstructionSite = creep.room.constructionSites[0];
+      if (availableConstructionSite)
+        possibilities.push(new WalkToCreepStrategy(creep, availableConstructionSite.id, new BuildingCreepStrategy(creep)));
 
-      possibilities.push(new UpgradeCreepStrategy(creep));
+      if(creep.room.room && creep.room.room.controller)
+        possibilities.push(new WalkToCreepStrategy(creep, creep.room.room.controller.id, new UpgradeCreepStrategy(creep)));
     }
 
     let offset = this._strategyOffset++ % possibilities.length;
@@ -115,9 +118,6 @@ export default class RoomCreepsDecorator {
         Arrays.add(this.active, nextIdleCreep);
         Arrays.remove(this.idle, nextIdleCreep);
         nextIdleCreep.setStrategy(neededStrategy);
-      } else {
-        // let spiralOffset = Coordinates.calculateSpiralOffset((offset + 1) * 2);
-        // nextIdleCreep.moveTo(new RoomPosition(25 + spiralOffset.x, 25 + spiralOffset.y, this.room.roomName));
       }
     }
 

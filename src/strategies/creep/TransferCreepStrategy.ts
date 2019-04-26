@@ -10,21 +10,21 @@ export default class TransferCreepStrategy implements CreepStrategy {
 
   constructor(
     private readonly creep: CreepDecorator,
-    private readonly availableTransferSites: Structure[]
+    private readonly targetId: string
   ) {
 
   }
 
   tick() {
+    console.log('transfer tick');
+
     let creep = this.creep;
     if(creep.creep.carry.energy == 0)
       return null;
 
-    var transferResult = creep.creep.transfer(this.availableTransferSites[0], RESOURCE_ENERGY);
-    if (transferResult === ERR_NOT_IN_RANGE) {
-      creep.moveTo(this.availableTransferSites[0]);
-    } else if(transferResult === OK) {
-      return null;
+    var transferResult = creep.creep.transfer(Game.getObjectById(this.targetId), RESOURCE_ENERGY);
+    if(transferResult === OK) {
+      return;
     } else if(transferResult === ERR_FULL) {
       return null;
     } else {

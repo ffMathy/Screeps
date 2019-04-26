@@ -30,13 +30,13 @@ export default class ExploreCreepStrategy implements CreepStrategy {
     }
 
     if(this.fromRoomName !== creep.creep.room.name) {
-      creep.moveTo(creep.creep.room.controller);
+      // creep.moveTo(creep.creep.room.controller);
       return new ClaimCreepStrategy(creep);
     }
 
     if(!this.target)
       throw new Error("No target exit from room " + this.fromRoomName + " to room " + this.roomName + " found.");
 
-    creep.moveTo(this.target);
+    // creep.moveTo(this.target);
   }
 }

@@ -1,7 +1,7 @@
 import CreepDecorator from "CreepDecorator";
-import GameDecorator from "GameDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 import profile from "profiler";
+import GameDecorator from "GameDecorator";
 
 @profile
 export default class HarvestCreepStrategy implements CreepStrategy {
@@ -10,7 +10,8 @@ export default class HarvestCreepStrategy implements CreepStrategy {
   }
 
   constructor(
-    private readonly creep: CreepDecorator
+    private readonly creep: CreepDecorator,
+    private readonly reservedSource: Source
   ) {}
 
   tick() {
@@ -19,30 +20,27 @@ export default class HarvestCreepStrategy implements CreepStrategy {
       return null;
     }
 
-    let sources = this.creep.room.sources;
-    let reservedId = this.creep.memory.reservationId;
-    let reservedSource: Source = null;
-    if(reservedId) {
-      reservedSource = sources.find(x => x.id === reservedId);
-    }
+    // let sources = this.creep.room.sources;
+    // let reservedId = this.creep.memory.reservationId;
+    // let reservedSource: Source = null;
+    // if(reservedId) {
+    //   reservedSource = sources.find(x => x.id === reservedId);
+    //   GameDecorator.instance.resources.reserve(this.creep, reservedId);
+    // }
 
-    if(!reservedSource) {
-      for (let source of sources) {
-        if(!GameDecorator.instance.resources.reserve(this.creep, source.id))
-          continue;
+    // if(!reservedSource) {
+    //   for (let source of sources) {
+    //     if(!GameDecorator.instance.resources.reserve(this.creep, source.id))
+    //       continue;
 
-        reservedSource = source;
-        break;
-      }
-    }
+    //     reservedSource = source;
+    //     break;
+    //   }
+    // }
 
-    if (reservedSource) {
-      if(this.creep.creep.harvest(reservedSource) === ERR_NOT_IN_RANGE) {
-        this.creep.moveTo(reservedSource);
-      }
-    } else {
-      GameDecorator.instance.resources.unreserve(this.creep);
-      return null;
+    let harvestResult = this.creep.creep.harvest(this.reservedSource);
+    if(harvestResult !== OK) {
+      throw new Error('Harvest error: ' + harvestResult);
     }
   }
 }

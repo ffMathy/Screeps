@@ -16,10 +16,7 @@ export default class ClaimCreepStrategy implements CreepStrategy {
     var creep=this.creep;
     let controller = creep.creep.room.controller;
     let claimResult = creep.creep.claimController(controller);
-    if(claimResult === ERR_NOT_IN_RANGE) {
-      creep.moveTo(controller);
-      return void 0;
-    } else if(claimResult === ERR_INVALID_TARGET) {
+    if(claimResult === ERR_INVALID_TARGET) {
       creep.creep.suicide();
       return void 0;
     } else if(claimResult !== OK) {
