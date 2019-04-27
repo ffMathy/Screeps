@@ -30,9 +30,9 @@ export default class WalkToCreepStrategy implements CreepStrategy {
 
     let direction = path.direction;
     if(path.nextStep.creep) {
-      direction = (direction + 1) % 9;
-      if(direction === 0)
-        direction++;
+      // direction = (direction + 1) % 9;
+      // if(direction === 0)
+      //   direction++;
     }
 
     switch(direction) {

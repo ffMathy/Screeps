@@ -14,7 +14,6 @@ export default class CreepDecorator {
   public tile: TileState;
 
   private strategy: CreepStrategy;
-  private lastStrategyTick: number;
   private lastPosition: RoomPosition;
 
   public get memory(): CreepMemory {
@@ -58,7 +57,6 @@ export default class CreepDecorator {
 
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
-    this.lastStrategyTick = this.game.tickCount;
     this.creep.memory.strategy = strategy ? strategy.name : '';
   }
 
