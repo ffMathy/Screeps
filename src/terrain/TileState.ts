@@ -69,11 +69,22 @@ export default class TileState {
   getSurroundingEnvironment(radius: number) {
     if (typeof this.surroundingEnvironmentsByRadius[radius] !== "undefined")
       return this.surroundingEnvironmentsByRadius[radius];
-    let areas = this.terrain.room.room.lookForAtArea(LOOK_TERRAIN, this.position.y - radius, this.position.x - radius, this.position.y + radius, this.position.x + radius, true) as LookAtResultWithPos[];
+
+    //TODO: for all areas larger than radius 1, use only every 2nd tile, so that every creep can move past eachother.
+
+    let areas = this.terrain.room.room.lookForAtArea(
+      LOOK_TERRAIN,
+      this.position.y - radius,
+      this.position.x - radius,
+      this.position.y + radius,
+      this.position.x + radius,
+      true) as LookAtResultWithPos[];
+
     let tiles = areas
       .filter(x => x.x !== this.position.x || x.y !== this.position.y)
       .filter(x => x.terrain !== "wall")
       .map(t => this.terrain.getTileAt(t.x, t.y));
+
     this.surroundingEnvironmentsByRadius[radius] = new SurroundingTileEnvironment(this, tiles);
     return this.surroundingEnvironmentsByRadius[radius];
   }
