@@ -10,6 +10,57 @@ export const enum Direction {
 }
 
 export default class Coordinates {
+    static roomPositionToNumber(position: RoomPosition) {
+        return position.x + 50 * position.y;
+    }
+
+    static rotateDirectionRight(direction: Direction) {
+        direction = (direction + 1) % 9;
+        if (direction === 0)
+            direction++;
+
+        return direction;
+    }
+
+    static rotateDirectionLeft(direction: Direction) {
+        direction--;
+        if (direction === 0)
+            direction = 8;
+
+        return direction % 9;
+    }
+
+    static coordinatesFromDirection(direction: Direction) {
+        switch (direction) {
+            case Direction.TOP_LEFT:
+                return { x: -1, y: -1 };
+
+            case Direction.TOP:
+                return { x: 0, y: -1 };
+
+            case Direction.TOP_RIGHT:
+                return { x: 1, y: -1 };
+
+            case Direction.RIGHT:
+                return { x: 1, y: 0 };
+
+            case Direction.BOTTOM_RIGHT:
+                return { x: 1, y: 1 };
+
+            case Direction.BOTTOM:
+                return { x: 0, y: 1 };
+
+            case Direction.BOTTOM_LEFT:
+                return { x: -1, y: 1 };
+
+            case Direction.LEFT:
+                return { x: -1, y: 0 };
+
+            default:
+                throw new Error('Unknown direction: ' + direction + '.');
+        }
+    }
+
     static directionFromCoordinates(a: RoomPosition, b: RoomPosition) {
         let dx = b.x - a.x;
         let dy = b.y - a.y;

@@ -86,9 +86,10 @@ export default class SpawnDecorator {
 
         if(!this.room.creeps.isPopulationMaintained) {
             this.spawnCreep([MOVE, MOVE, CARRY, WORK], this.room.roomName);
-        } else if(this.room.creeps.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
-            this.spawnCreep([CLAIM, MOVE], this.room.getRandomUnexploredNeighbourName());
         }
+        //  else if(this.room.creeps.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
+        //     this.spawnCreep([CLAIM, MOVE], this.room.getRandomUnexploredNeighbourName());
+        // }
     }
 
     tick() {

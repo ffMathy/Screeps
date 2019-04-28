@@ -23,8 +23,5 @@ export default class StrategyPickingRoomStrategy implements RoomStrategy {
         return room.setStrategy(new ConstructStructuresRoomStrategy(room));
       }
     }
-
-    for(let spawn of room.spawns)
-      spawn.tick();
   }
 }

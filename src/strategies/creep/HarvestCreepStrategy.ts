@@ -16,27 +16,8 @@ export default class HarvestCreepStrategy implements CreepStrategy {
 
   tick() {
     if(this.creep.creep.carry.energy == this.creep.creep.carryCapacity) {
-      // GameDecorator.instance.resources.unreserve(this.creep);
       return null;
     }
-
-    // let sources = this.creep.room.sources;
-    // let reservedId = this.creep.memory.reservationId;
-    // let reservedSource: Source = null;
-    // if(reservedId) {
-    //   reservedSource = sources.find(x => x.id === reservedId);
-    //   GameDecorator.instance.resources.reserve(this.creep, reservedId);
-    // }
-
-    // if(!reservedSource) {
-    //   for (let source of sources) {
-    //     if(!GameDecorator.instance.resources.reserve(this.creep, source.id))
-    //       continue;
-
-    //     reservedSource = source;
-    //     break;
-    //   }
-    // }
 
     let harvestResult = this.creep.creep.harvest(
       Game.getObjectById(this.reservedSourceId)

@@ -1,4 +1,3 @@
-import Resources from "Resources";
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
 import profile from "profiler";
@@ -7,7 +6,6 @@ import profile from "profiler";
 export default class GameDecorator {
   public readonly availableCpu: number;
 
-  public readonly resources: Resources;
   public readonly rooms: RoomsDecorator;
 
   private static _instance: GameDecorator;
@@ -25,10 +23,8 @@ export default class GameDecorator {
 
   constructor(public game: Game) {
     this.rooms = new RoomsDecorator(this);
-    this.resources = new Resources(this.rooms);
 
     this.rooms.initialize();
-    this.resources.initialize();
 
     for(let name in game.creeps) {
       this.rooms.detectRoom(game.creeps[name].room.name).creeps.add(

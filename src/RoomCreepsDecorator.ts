@@ -3,13 +3,13 @@ import Arrays from 'helpers/Arrays';
 import RoomDecorator from 'RoomDecorator';
 import RoomsDecorator from 'RoomsDecorator';
 import { CreepStrategy } from 'strategies/Strategy';
-import GameDecorator from 'GameDecorator';
 import HarvestCreepStrategy from 'strategies/creep/HarvestCreepStrategy';
 import UpgradeCreepStrategy from 'strategies/creep/UpgradeCreepStrategy';
 import TransferCreepStrategy from 'strategies/creep/TransferCreepStrategy';
 import BuildingCreepStrategy from 'strategies/creep/BuildingCreepStrategy';
-import profile from 'profiler';
 import WalkToCreepStrategy from 'strategies/creep/WalkToCreepStrategy';
+import profile from 'profiler';
+import NullCreepStrategy from 'strategies/creep/NullCreepStrategy';
 
 @profile
 export default class RoomCreepsDecorator {
@@ -20,8 +20,7 @@ export default class RoomCreepsDecorator {
   private _strategyOffset: number;
 
   public get isPopulationMaintained() {
-    return this.all.length >= 5;
-    return this.idle.length > this.active.length / 3;
+    return this.all.length >= 15;
   }
 
   constructor(
@@ -34,9 +33,17 @@ export default class RoomCreepsDecorator {
     this._strategyOffset = 0;
   }
 
-  initialize(allCreeps: CreepDecorator[]) {
-    for (let creep of allCreeps)
-      this.add(creep);
+  initialize() {
+    Arrays.add(this.room.visuals, (visual: RoomVisual) => visual
+      .text(
+        this.isPopulationMaintained ? '' : '🔺',
+        this.room.room.controller.pos.x,
+        this.room.room.controller.pos.y + 1
+      )
+      .text(
+        '💤' + this.idle.length + ' 👷' + this.active.length,
+        this.room.room.controller.pos.x,
+        this.room.room.controller.pos.y + 2));
   }
 
   remove(creep: CreepDecorator) {
@@ -77,31 +84,94 @@ export default class RoomCreepsDecorator {
     }
   }
 
+  private reserveSpot(creep: CreepDecorator, position: RoomPosition, radius: number) {
+    let sourceTile = creep.room.terrain.getTileAt(position);
+
+    let parkingLot = sourceTile.getSurroundingEnvironment(radius);
+    if(parkingLot.availableTiles.length === 0)
+      return null;
+
+    return parkingLot.availableTiles[0];
+  }
+
+  private walkToIfPossible(
+    creep: CreepDecorator,
+    position: RoomPosition,
+    radius: number,
+    successorStrategy: CreepStrategy)
+  {
+    let reservation = this.reserveSpot(creep, position, radius);
+    if(!reservation)
+      return null;
+
+    return new WalkToCreepStrategy(
+      creep,
+      reservation.position,
+      successorStrategy);
+  }
+
   private getNeededStrategy(creep: CreepDecorator): CreepStrategy {
     let energyCarry = creep.creep.carry.energy;
 
     let possibilities = new Array<CreepStrategy>();
 
     let isEmpty = energyCarry === 0;
-    let availableSource = creep.room.sources.find(x => !GameDecorator.instance.resources.isReserved(x.id));
-    if (isEmpty && availableSource)
-      possibilities.push(new WalkToCreepStrategy(creep, availableSource.id, new HarvestCreepStrategy(creep, availableSource.id)));
+    if(isEmpty) {
+      for(let source of this.room.sources) {
+        Arrays.add(
+          possibilities,
+          this.walkToIfPossible(
+            creep,
+            source.pos,
+            1,
+            new HarvestCreepStrategy(
+              creep,
+              source.id)
+          ));
+      }
+    }
 
     if (!isEmpty) {
-      if (creep.room.room && (creep.room.room.controller.level === 0 || (creep.room.room.controller.ticksToDowngrade > 0 && creep.room.room.controller.ticksToDowngrade < 5000))) {
-        possibilities.push(new WalkToCreepStrategy(creep, creep.room.room.controller.id, new UpgradeCreepStrategy(creep)));
+      let availableTransferSites = creep.room.getTransferrableStructures();
+      for(let availableTransferSite of availableTransferSites) {
+        Arrays.add(
+          possibilities,
+          this.walkToIfPossible(
+            creep,
+            availableTransferSite.pos,
+            1,
+            new TransferCreepStrategy(
+              creep,
+              availableTransferSite.id)
+          ));
       }
 
-      let availableTransferSite = creep.room.getTransferrableStructures()[0];
-      if (availableTransferSite)
-        possibilities.push(new WalkToCreepStrategy(creep, availableTransferSite.id, new TransferCreepStrategy(creep, availableTransferSite.id)));
+      if (creep.room.room && creep.room.room.controller) {
+        Arrays.add(
+          possibilities,
+          this.walkToIfPossible(
+            creep,
+            creep.room.room.controller.pos,
+            3,
+            new UpgradeCreepStrategy(creep)
+          ));
+      }
 
-      let availableConstructionSite = creep.room.constructionSites[0];
-      if (availableConstructionSite)
-        possibilities.push(new WalkToCreepStrategy(creep, availableConstructionSite.id, new BuildingCreepStrategy(creep)));
-
-      if(creep.room.room && creep.room.room.controller)
-        possibilities.push(new WalkToCreepStrategy(creep, creep.room.room.controller.id, new UpgradeCreepStrategy(creep)));
+      let availableConstructionSites = creep.room.constructionSites;
+      if (availableConstructionSites) {
+        for(let availableConstructionSite of availableConstructionSites) {
+          Arrays.add(
+            possibilities,
+            this.walkToIfPossible(
+              creep,
+              availableConstructionSite.pos,
+              availableConstructionSite.structureType === STRUCTURE_ROAD ? 1 : 3,
+              new BuildingCreepStrategy(
+                creep,
+                availableConstructionSite.id)
+            ));
+        }
+      }
     }
 
     let offset = this._strategyOffset++ % possibilities.length;
@@ -109,16 +179,20 @@ export default class RoomCreepsDecorator {
   }
 
   tick() {
-    if (this.idle.length > 0) {
+    while (this.idle.length > 0) {
       let offset = this._strategyOffset % this.idle.length;
       let nextIdleCreep = this.idle[offset];
 
+      Arrays.remove(this.idle, nextIdleCreep);
+
       let neededStrategy = this.getNeededStrategy(nextIdleCreep);
-      if(!!neededStrategy) {
+      if(!neededStrategy) {
+        neededStrategy = new WalkToCreepStrategy(nextIdleCreep, this.room.terrain.getTileAt(10, 10).position, new NullCreepStrategy(nextIdleCreep));
+      } else {
         Arrays.add(this.active, nextIdleCreep);
-        Arrays.remove(this.idle, nextIdleCreep);
-        nextIdleCreep.setStrategy(neededStrategy);
       }
+
+      nextIdleCreep.setStrategy(neededStrategy);
     }
 
     for (let creep of this.active) {

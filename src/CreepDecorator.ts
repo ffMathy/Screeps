@@ -2,19 +2,35 @@ import RoomDecorator from 'RoomDecorator';
 import GameDecorator from 'GameDecorator';
 import { CreepStrategy } from 'strategies/Strategy';
 import profile from 'profiler';
-import { TileState } from 'TerrainDecorator';
+import TileState from "terrain/TileState";
 
 export interface CreepMemory {
-  reservationId: string;
+  strategy: string;
 }
 
 @profile
 export default class CreepDecorator {
   public room: RoomDecorator;
-  public tile: TileState;
+
+  private _tile: TileState;
+  private _futureTile: TileState;
 
   private strategy: CreepStrategy;
   private lastPosition: RoomPosition;
+
+  get tile() {
+    return this._tile;
+  }
+
+  set futureTile(value: TileState) {
+    if(this._futureTile)
+      this._futureTile.futureCreep = null;
+
+    this._futureTile = value;
+
+    if(this._futureTile)
+      this._futureTile.futureCreep = this;
+  }
 
   public get memory(): CreepMemory {
     return this.creep.memory;
@@ -29,35 +45,11 @@ export default class CreepDecorator {
     this.strategy = null;
   }
 
-  // moveTo(target: RoomPosition | { pos: RoomPosition; }, opts?: MoveToOpts) {
-  //   if(!opts)
-  //     opts = {};
-
-  //   opts.visualizePathStyle = { stroke: '#ffffff' };
-
-  //   opts.ignoreRoads = true;
-  //   opts.ignoreCreeps = true;
-  //   opts.ignoreDestructibleStructures = true;
-  //   opts.reusePath = 1000;
-  //   opts.noPathFinding = true;
-  //   opts.maxRooms = 0;
-
-  //   let moveResult = this.creep.moveTo(target, opts);
-  //   if(moveResult === ERR_NOT_FOUND) {
-  //     console.log('recalculate', this.creep.name, Game.time);
-  //     this.say('recalculate');
-  //     opts.noPathFinding = false;
-  //     moveResult = this.creep.moveTo(target, opts);
-  //   } else if(moveResult !== 0) {
-  //     console.log('move error', moveResult);
-  //   }
-
-  //   return moveResult;
-  // }
-
   setStrategy(strategy: CreepStrategy) {
     this.strategy = strategy;
-    this.creep.memory.strategy = strategy ? strategy.name : '';
+    this.memory.strategy = strategy ? strategy.name : '';
+    if(strategy)
+      this.say(strategy.name, true);
   }
 
   updateRoom() {
@@ -76,7 +68,11 @@ export default class CreepDecorator {
       this.creep = Game.creeps[this.creep.name];
 
     if(!this.creep || oldCreep.ticksToLive <= 3) {
-      this.game.resources.unreserve(oldCreep);
+      if(this._tile)
+        this._tile.creep = null;
+
+      this.futureTile = null;
+
       this.room.creeps.remove(this);
       delete Memory.creeps[this.creep.name];
       return;
@@ -85,9 +81,12 @@ export default class CreepDecorator {
     if(this.creep.room.name !== oldCreep.room.name)
       this.updateRoom();
 
-    if(!this.tile || this.creep.pos.x !== this.tile.position.x || this.creep.pos.y !== this.tile.position.y) {
-      this.tile = this.room.terrain.getTileAt(this.creep.pos.x, this.creep.pos.y);
-      this.tile.creep = this;
+    if(!this._tile || this.creep.pos.x !== this._tile.position.x || this.creep.pos.y !== this._tile.position.y) {
+      if(this._tile)
+        this._tile.creep = null;
+
+      this._tile = this.room.terrain.getTileAt(this.creep.pos.x, this.creep.pos.y);
+      this._tile.creep = this;
     }
 
     if(!this.lastPosition)
@@ -95,8 +94,6 @@ export default class CreepDecorator {
 
     if(!this.strategy)
       return;
-
-    this.say(this.strategy.name, true);
 
     if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
       this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);

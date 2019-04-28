@@ -1,7 +1,7 @@
 import SpawnDecorator from "SpawnDecorator";
 import GameDecorator from "GameDecorator";
 import RoomsDecorator from "RoomsDecorator";
-import TerrainDecorator from "TerrainDecorator";
+import TerrainDecorator from "terrain/TerrainDecorator";
 import ConstructStructuresRoomStrategy from "strategies/room/ConstructStructuresRoomStrategy";
 import RoomCreepsDecorator from "RoomCreepsDecorator";
 import profile from "profiler";
@@ -19,6 +19,8 @@ export default class RoomDecorator {
   public spawns: SpawnDecorator[];
   public terrain: TerrainDecorator;
   public transferrableStructures: (Structure | Spawn | Tower)[];
+
+  public readonly visuals: ((visual: RoomVisual) => RoomVisual)[];
 
   public readonly creeps: RoomCreepsDecorator;
 
@@ -53,6 +55,7 @@ export default class RoomDecorator {
   {
     this.creeps = new RoomCreepsDecorator(rooms, this);
     this.constructionSites = [];
+    this.visuals = [];
 
     this._unexploredNeighbourNameOffset = 0;
     this._unexploredNeighbourNames = [];
@@ -60,10 +63,25 @@ export default class RoomDecorator {
     this._allNeighbouringRooms = [];
   }
 
+  findPath(fromPos: RoomPosition, toPos: RoomPosition, opts?: FindPathOpts): PathStep[] {
+    if(!opts)
+      opts = {};
+
+    opts.ignoreCreeps = true;
+    opts.ignoreDestructibleStructures = false;
+    opts.ignoreRoads = true;
+
+    return this.room.findPath(fromPos, toPos, opts);
+  }
+
   createConstructionSite(x: number, y: number, structureType: string): number {
     let returnValue = this.room.createConstructionSite(x, y, structureType);
-    if (returnValue === 0)
+    if (returnValue === 0) {
       this.refreshConstructionSites();
+
+      let tile = this.terrain.getTileAt(x, y);
+      tile.constructionSite = this.constructionSites.find(t => t.pos.x === x && t.pos.y === y);
+    }
 
     return returnValue;
   }
@@ -71,6 +89,8 @@ export default class RoomDecorator {
   initialize() {
     this.terrain = new TerrainDecorator(this, (this.game.game.map as any).getRoomTerrain(this.roomName));
     this.sources = this.isClaimed ? this.room.find(FIND_SOURCES) : [];
+
+    this.creeps.initialize()
 
     this.refresh();
     this.strategy = new ConstructStructuresRoomStrategy(this);
@@ -156,7 +176,15 @@ export default class RoomDecorator {
   }
 
   tick() {
+    if(this.room && this.room.visual) {
+      for(let visual of this.visuals)
+        visual(this.room.visual);
+    }
+
     this.strategy.tick();
     this.creeps.tick();
+
+    for(let spawn of this.spawns)
+      spawn.tick();
   }
 }

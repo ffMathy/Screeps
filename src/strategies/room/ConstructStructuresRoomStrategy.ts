@@ -11,6 +11,10 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
   tick() {
     let room = this.room;
+
+    room.setStrategy(new StrategyPickingRoomStrategy(room));
+    return;
+
     if(!room.room)
       return;
 

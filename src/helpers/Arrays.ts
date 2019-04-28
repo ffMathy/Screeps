@@ -1,5 +1,8 @@
 export default class Arrays {
   static add<T>(array: T[], item: T) {
+    if(!item)
+      return false;
+
     if(array.indexOf(item) > -1)
       return false;
 
@@ -8,6 +11,9 @@ export default class Arrays {
   }
 
   static remove<T>(array: T[], item: T) {
+    if(!item)
+      return false;
+
     if(array.indexOf(item) === -1)
       return false;
 

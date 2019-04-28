@@ -1,75 +1,69 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 import profile from "profiler";
-import { Direction } from "helpers/Coordinates";
+import Coordinates, { Direction } from "helpers/Coordinates";
 
 @profile
 export default class WalkToCreepStrategy implements CreepStrategy {
   private direction: string;
+  private prefersLeft: boolean;
 
   get name() {
-    return "👞" + this.direction + this.successorStrategy.name;
+    return this.direction + " " + this.successorStrategy.name;
   }
 
   constructor(
     private readonly creep: CreepDecorator,
-    private readonly targetId: string,
+    private readonly targetPosition: RoomPosition,
     private readonly successorStrategy: CreepStrategy
   ) {
     this.direction = "";
+    this.prefersLeft = null;
   }
 
   tick() {
-    let path = this.creep.tile.getPathTo(this.targetId);
+    if(!this.creep.futureTile)
+      this.creep.futureTile = this.creep.room.terrain.getTileAt(this.targetPosition);
+
+    let path = this.creep.tile.getPathTo(this.targetPosition);
     if(path === null) {
       return this.successorStrategy;
     }
 
-    if(this.creep.creep.fatigue !== 0)
-      return;
+    let direction = path.nextDirection;
+    this.direction = this.getDirectionEmojiFromDirection(direction);
 
-    let direction = path.direction;
     if(path.nextStep.creep) {
-      // direction = (direction + 1) % 9;
-      // if(direction === 0)
-      //   direction++;
-    }
+      let leftDirection = Coordinates.rotateDirectionLeft(direction);
+      let rightDirection = Coordinates.rotateDirectionRight(direction);
 
-    switch(direction) {
-      case Direction.TOP_LEFT:
-        this.direction = "↖";
-        break;
+      let leftTile = path.nextStep.getTileInDirection(leftDirection);
+      let rightTile = path.nextStep.getTileInDirection(rightDirection);
 
-      case Direction.TOP:
-        this.direction = "⬆";
-        break;
+      let tries = 0;
+      let foundFreedom = !leftTile.creep && !rightTile.creep;
+      while(tries++ < 5 && !foundFreedom) {
+        leftDirection = Coordinates.rotateDirectionLeft(leftDirection);
+        rightDirection = Coordinates.rotateDirectionRight(rightDirection);
 
-      case Direction.TOP_RIGHT:
-        this.direction = "↗";
-        break;
+        leftTile = path.nextStep.getTileInDirection(leftDirection);
+        rightTile = path.nextStep.getTileInDirection(rightDirection);
 
-      case Direction.RIGHT:
-        this.direction = "➡";
-        break;
+        foundFreedom =
+          (this.prefersLeft === null && (!leftTile.creep || !rightTile.creep)) ||
+          (this.prefersLeft === true && !leftTile.creep) ||
+          (this.prefersLeft === false && !rightTile.creep);
+      }
 
-      case Direction.BOTTOM_RIGHT:
-        this.direction = "↘";
-        break;
+      if(!foundFreedom) {
+        // this.prefersLeft = !this.prefersLeft;
+        this.creep.say("⏹" + this.direction);
+        return;
+      }
 
-      case Direction.BOTTOM:
-        this.direction = "⬇";
-        break;
-
-      case Direction.BOTTOM_LEFT:
-        this.direction = "↙";
-        break;
-
-      case Direction.LEFT:
-        this.direction = "⬅";
-        break;
-
-      default:
-        throw new Error('Unknown direction for emoji.');
+      let useLeft = this.prefersLeft !== false;
+      direction = (!useLeft || leftTile.creep) ? rightDirection : leftDirection;
+      this.direction = this.getDirectionEmojiFromDirection(direction);
     }
 
     let moveResult = this.creep.creep.move(direction);
@@ -83,4 +77,35 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     }
   }
 
+
+  private getDirectionEmojiFromDirection(direction: Direction) {
+    switch (direction) {
+      case Direction.TOP_LEFT:
+        return "↖";
+
+      case Direction.TOP:
+        return "⬆";
+
+      case Direction.TOP_RIGHT:
+        return "↗";
+
+      case Direction.RIGHT:
+        return "➡";
+
+      case Direction.BOTTOM_RIGHT:
+        return "↘";
+
+      case Direction.BOTTOM:
+        return "⬇";
+
+      case Direction.BOTTOM_LEFT:
+        return "↙";
+
+      case Direction.LEFT:
+        return "⬅";
+
+      default:
+        throw new Error('Unknown direction for emoji.');
+    }
+  }
 }
