@@ -19,7 +19,7 @@ export default class RoomCreepsDecorator {
   private _strategyOffset: number;
 
   public get isPopulationMaintained() {
-    return this.all.length >= 50;
+    return this.all.length >= 30;
   }
 
   constructor(

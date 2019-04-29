@@ -27,7 +27,7 @@ export default class SurroundingTileEnvironment {
     });
 
     this.tilesByProximity = tiles
-      .filter(x => !x.constructionSite)
+      .filter(x => !x.constructionSite || x.constructionSite.structureType === STRUCTURE_ROAD)
       .map(t => {
         let path = origin.getPathTo(t.position);
         return {

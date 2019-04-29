@@ -33,6 +33,7 @@ export default class TileState {
   };
 
   constructionSite: ConstructionSite;
+  structure: Structure;
 
   get isWalkable() {
     return this.modifier !== TERRAIN_MASK_WALL;

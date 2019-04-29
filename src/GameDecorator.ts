@@ -38,8 +38,8 @@ export default class GameDecorator {
   tick() {
     this.game = Game;
 
-    this.rooms.tick();
-
     EventHandler.runEventHandlers();
+
+    this.rooms.tick();
   }
 }

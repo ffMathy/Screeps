@@ -111,11 +111,17 @@ export default class RoomDecorator {
         tile.constructionSite = constructionSite;
       }
 
-      this.terrain.onChange.fire();
+      this.structures = this.room.find(FIND_MY_STRUCTURES);
+      for(let structure of this.structures) {
+        let tile = this.terrain.getTileAt(structure.pos);
+        tile.structure = structure;
+      }
 
       this.spawns = this.room
         .find(FIND_MY_SPAWNS)
         .map((x: Spawn) => new SpawnDecorator(this.game, this, x));
+
+      this.terrain.onChange.fire();
     }
   }
 
@@ -151,7 +157,7 @@ export default class RoomDecorator {
   }
 
   sayAt(object, text) {
-    if(!object || !object.pos)
+    if(!object || !object.pos || !this.room)
       return;
 
     this.room.visual.text(
