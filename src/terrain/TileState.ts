@@ -97,7 +97,7 @@ export default class TileState {
       .filter(x => x.terrain !== "wall")
       .map(t => this.terrain.getTileAt(t.x, t.y));
 
-    this.surroundingEnvironmentsByRadius[radius] = new SurroundingTileEnvironment(this, tiles);
+    this.surroundingEnvironmentsByRadius[radius] = new SurroundingTileEnvironment(radius, this, tiles);
     return this.surroundingEnvironmentsByRadius[radius];
   }
 

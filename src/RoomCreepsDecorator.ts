@@ -19,7 +19,7 @@ export default class RoomCreepsDecorator {
   private _strategyOffset: number;
 
   public get isPopulationMaintained() {
-    return this.all.length >= 30;
+    return this.all.length >= 15;
   }
 
   constructor(
@@ -180,26 +180,31 @@ export default class RoomCreepsDecorator {
       }
     }
 
+    if(possibilities.length === 0) {
+      Arrays.add(
+        possibilities,
+        this.walkToIfPossible(
+          creep,
+          this.room.room.getPositionAt(25, 25),
+          3,
+          null
+        ));
+    }
+
     let offset = this._strategyOffset++ % possibilities.length;
     return possibilities[offset];
   }
 
   tick() {
-    while (this.idle.length > 0) {
+    //it is very important only to take 1 idle creep - or else a race condition can occur where two creeps can go to the same reserved spot.
+    if (this.idle.length > 0) {
       let offset = this._strategyOffset % this.idle.length;
       let nextIdleCreep = this.idle[offset];
 
       let neededStrategy = this.getNeededStrategy(nextIdleCreep);
-      if(!neededStrategy) {
-        nextIdleCreep.setStrategy(
-          new WalkToCreepStrategy(
-            nextIdleCreep,
-            this.room.terrain.getTileAt(10, 10).position,
-            null));
-        break;
-      } else {
-        Arrays.remove(this.idle, nextIdleCreep);
+      if(neededStrategy) {
         Arrays.add(this.active, nextIdleCreep);
+        Arrays.remove(this.idle, nextIdleCreep);
 
         nextIdleCreep.setStrategy(neededStrategy);
       }

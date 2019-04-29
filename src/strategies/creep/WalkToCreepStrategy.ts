@@ -43,6 +43,8 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     if(moveResult === ERR_BUSY) {
       //still being spawned - ignore.
       return;
+    } else if(moveResult === ERR_TIRED) {
+      return;
     }
 
     if(moveResult !== OK) {

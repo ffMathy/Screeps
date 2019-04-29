@@ -96,10 +96,16 @@ export default class CreepDecorator {
       this.lastPosition = this.creep.pos;
 
     if(!this.strategy)
+      this.say('!');
+
+    if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y) {
+      this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
+    }
+
+    if(!this.strategy)
       return;
 
-    if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y)
-      this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
+    this.say(this.strategy.name);
 
     let newStrategy = this.strategy.tick();
     if(typeof newStrategy === "function") {

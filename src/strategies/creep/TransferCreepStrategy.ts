@@ -22,6 +22,9 @@ export default class TransferCreepStrategy implements CreepStrategy {
 
     var transferResult = creep.creep.transfer(Game.getObjectById(this.targetId), RESOURCE_ENERGY);
     if(transferResult === OK) {
+      if(creep.creep.carry.energy == 0)
+        return null;
+
       return;
     } else if(transferResult === ERR_FULL) {
       return null;

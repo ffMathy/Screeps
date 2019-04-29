@@ -12,9 +12,14 @@ export default class SurroundingTileEnvironment {
   readonly availableTiles: TileStateEnvironmentDecorator[];
   readonly occupiedTiles: TileStateEnvironmentDecorator[];
 
-  constructor(private readonly origin: TileState, tiles: TileState[]) {
+  private static lastHighwayTick: number;
+
+  constructor(private readonly radius: number, private readonly origin: TileState, tiles: TileState[]) {
     this.availableTiles = [];
     this.occupiedTiles = [];
+
+    if(!SurroundingTileEnvironment.lastHighwayTick)
+      SurroundingTileEnvironment.lastHighwayTick = Game.time;
 
     this.makeHighways();
     origin.terrain.onChange.addListener(this.makeHighways.bind(this), true);
@@ -47,7 +52,12 @@ export default class SurroundingTileEnvironment {
   }
 
   private makeHighways() {
-    if(this.origin.terrain.room.constructionSites.length > 0)
+    if(SurroundingTileEnvironment.lastHighwayTick && SurroundingTileEnvironment.lastHighwayTick >= Game.time - 10)
+      return;
+
+    SurroundingTileEnvironment.lastHighwayTick = Game.time;
+
+    if(this.origin.terrain.room.constructionSites.length > 0 || this.radius <= 1)
       return;
 
     for(let source of this.origin.terrain.room.sources) {
