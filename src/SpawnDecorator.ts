@@ -12,7 +12,7 @@ export default class SpawnDecorator {
     constructor(
         private readonly game: GameDecorator,
         public readonly room: RoomDecorator,
-        private readonly spawn: Spawn)
+        public readonly spawn: Spawn)
     {
         if(this.spawn === null) {
             for(let key in Game.spawns) {

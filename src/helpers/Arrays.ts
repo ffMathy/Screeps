@@ -10,6 +10,25 @@ export default class Arrays {
     return true;
   }
 
+  static insertAscending<T>(array: T[], item: T, scoreAccessor: (item: T) => number) {
+    let itemScore = scoreAccessor(item);
+    for(let i=0;i<array.length;i++) {
+      let arrayItem = array[i];
+      if(arrayItem === item)
+        return false;
+
+      let arrayItemScore = scoreAccessor(arrayItem);
+      if(arrayItemScore <= itemScore)
+        continue;
+
+      array.splice(i, 0, item);
+      return true;
+    }
+
+    array.push(item);
+    return true;
+  }
+
   static remove<T>(array: T[], item: T) {
     if(!item)
       return false;

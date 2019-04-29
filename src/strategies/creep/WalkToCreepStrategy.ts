@@ -1,14 +1,16 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 import profile from "profiler";
-import Coordinates, { Direction } from "helpers/Coordinates";
+import { Direction } from "helpers/Coordinates";
 
 @profile
 export default class WalkToCreepStrategy implements CreepStrategy {
   private direction: string;
-  private prefersLeft: boolean;
 
   get name() {
+    if(!this.successorStrategy)
+      return this.direction || "?";
+
     return this.direction + " " + this.successorStrategy.name;
   }
 
@@ -18,7 +20,6 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     private readonly successorStrategy: CreepStrategy
   ) {
     this.direction = "";
-    this.prefersLeft = null;
   }
 
   tick() {
@@ -34,37 +35,7 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     this.direction = this.getDirectionEmojiFromDirection(direction);
 
     if(path.nextStep.creep) {
-      let leftDirection = Coordinates.rotateDirectionLeft(direction);
-      let rightDirection = Coordinates.rotateDirectionRight(direction);
-
-      let leftTile = path.nextStep.getTileInDirection(leftDirection);
-      let rightTile = path.nextStep.getTileInDirection(rightDirection);
-
-      //TODO: check for walls. should never try to skip left or right into a wall.
-
-      let tries = 0;
-      let foundFreedom = !leftTile.creep && !rightTile.creep;
-      while(tries++ < 5 && !foundFreedom) {
-        leftDirection = Coordinates.rotateDirectionLeft(leftDirection);
-        rightDirection = Coordinates.rotateDirectionRight(rightDirection);
-
-        leftTile = path.nextStep.getTileInDirection(leftDirection);
-        rightTile = path.nextStep.getTileInDirection(rightDirection);
-
-        foundFreedom =
-          (this.prefersLeft === null && (!leftTile.creep || !rightTile.creep)) ||
-          (this.prefersLeft === true && !leftTile.creep) ||
-          (this.prefersLeft === false && !rightTile.creep);
-      }
-
-      if(!foundFreedom) {
-        // this.prefersLeft = !this.prefersLeft;
-        this.creep.say("⏹" + this.direction);
-        return;
-      }
-
-      let useLeft = this.prefersLeft !== false;
-      direction = (!useLeft || leftTile.creep) ? rightDirection : leftDirection;
+      direction = Math.floor(Math.random() * 7.5) + 1;
       this.direction = this.getDirectionEmojiFromDirection(direction);
     }
 

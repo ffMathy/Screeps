@@ -11,10 +11,6 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
   tick() {
     let room = this.room;
-
-    room.setStrategy(new StrategyPickingRoomStrategy(room));
-    return;
-
     if(!room.room)
       return;
 
@@ -48,8 +44,8 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
         offset += 2;
 
-        let terrain = room.terrain.getModifier(position.x, position.y);
-        if(terrain === TERRAIN_MASK_WALL)
+        let isWalkable = room.terrain.getTileAt(position.x, position.y).isWalkable;
+        if(!isWalkable)
           continue;
 
         let buildResult = room.room.createConstructionSite(position.x, position.y, typeToBuild);

@@ -1,6 +1,7 @@
 import RoomDecorator from "RoomDecorator";
 import profile from "profiler";
 import TileState from "terrain/TileState";
+import EventHandler from "helpers/EventHandler";
 
 declare interface Terrain {
   get(x: number, y: number): number
@@ -10,15 +11,14 @@ declare interface Terrain {
 export default class TerrainDecorator {
   private readonly tiles: Array<TileState>;
 
+  public readonly onChange: EventHandler<TerrainDecorator>;
+
   constructor(
     public readonly room: RoomDecorator,
     public readonly terrain: Terrain
   ) {
     this.tiles = new Array(50 * 50);
-  }
-
-  getModifier(x: number, y: number) {
-    return this.terrain.get(x, y);
+    this.onChange = new EventHandler(this);
   }
 
   getTileAt(position: RoomPosition): TileState
@@ -49,7 +49,7 @@ export default class TerrainDecorator {
   }
 
   increaseTilePopularity(x: number, y: number) {
-    if (!this.room.room || !this.room.room.controller || this.room.room.controller.level <= 4)
+    if (!this.room.room || !this.room.room.controller || this.room.room.controller.level <= 6)
       return;
 
     let tile = this.getTileAt(x, y);
@@ -59,7 +59,7 @@ export default class TerrainDecorator {
 
     let popularity = Math.min(maximumPopularity, tile.popularity.score);
     if (popularity === maximumPopularity) {
-      this.room.createConstructionSite(x, y, STRUCTURE_ROAD);
+      this.room.createConstructionSites([tile.position], STRUCTURE_ROAD);
       popularity = 1;
     }
 

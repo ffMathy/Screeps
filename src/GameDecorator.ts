@@ -1,6 +1,7 @@
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
 import profile from "profiler";
+import EventHandler from "helpers/EventHandler";
 
 @profile
 export default class GameDecorator {
@@ -38,5 +39,7 @@ export default class GameDecorator {
     this.game = Game;
 
     this.rooms.tick();
+
+    EventHandler.runEventHandlers();
   }
 }

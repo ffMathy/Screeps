@@ -20,7 +20,7 @@ global['removeAllConstructionSites'] = () => {
     }
 }
 
-global['killAllCreepsExcept'](5);
+global['killAllCreepsExcept'](30);
 
 global['gameDecorator'] = GameDecorator.instance;
 

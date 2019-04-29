@@ -10,8 +10,9 @@ export default class TileState {
   };
 
   private _creep: CreepDecorator;
-
   private _futureCreep: CreepDecorator;
+
+  private readonly modifier: number;
 
   readonly onCreepChanged: EventHandler<TileState, [CreepDecorator]>;
   readonly onFutureCreepChanged: EventHandler<TileState, [CreepDecorator]>;
@@ -23,15 +24,19 @@ export default class TileState {
 
   readonly position: RoomPosition;
 
-  private readonly pathsTo: {
+  private pathsTo: {
     [positionIndex: number]: {
       distance: number;
       nextStep: TileState;
       nextDirection: Direction;
     };
-  } = {};
+  };
 
   constructionSite: ConstructionSite;
+
+  get isWalkable() {
+    return this.modifier !== TERRAIN_MASK_WALL;
+  }
 
   get creep() {
     return this._creep;
@@ -61,9 +66,15 @@ export default class TileState {
 
   constructor(public readonly terrain: TerrainDecorator, x: number, y: number) {
     this.position = new RoomPosition(x, y, terrain.room.roomName);
+    this.modifier = terrain.terrain.get(x, y);
+
     this.surroundingEnvironmentsByRadius = {};
+
     this.onCreepChanged = new EventHandler(this);
     this.onFutureCreepChanged = new EventHandler(this);
+
+    this.pathsTo = {};
+    terrain.onChange.addListener(() => this.pathsTo = {}, true);
   }
 
   getSurroundingEnvironment(radius: number) {

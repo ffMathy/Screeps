@@ -40,9 +40,10 @@ export default class CreepDecorator {
     private readonly game: GameDecorator,
     public creep: Creep)
   {
+    this.strategy = null;
+
     this.room = game.rooms.fromCreep(creep);
     this.room.creeps.add(this);
-    this.strategy = null;
   }
 
   setStrategy(strategy: CreepStrategy) {
@@ -74,7 +75,9 @@ export default class CreepDecorator {
       this.futureTile = null;
 
       this.room.creeps.remove(this);
-      delete Memory.creeps[this.creep.name];
+      if(oldCreep && oldCreep.name)
+        delete Memory.creeps[oldCreep.name];
+
       return;
     }
 

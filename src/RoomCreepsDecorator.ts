@@ -9,7 +9,6 @@ import TransferCreepStrategy from 'strategies/creep/TransferCreepStrategy';
 import BuildingCreepStrategy from 'strategies/creep/BuildingCreepStrategy';
 import WalkToCreepStrategy from 'strategies/creep/WalkToCreepStrategy';
 import profile from 'profiler';
-import NullCreepStrategy from 'strategies/creep/NullCreepStrategy';
 
 @profile
 export default class RoomCreepsDecorator {
@@ -20,7 +19,7 @@ export default class RoomCreepsDecorator {
   private _strategyOffset: number;
 
   public get isPopulationMaintained() {
-    return this.all.length >= 15;
+    return this.all.length >= 50;
   }
 
   constructor(
@@ -65,7 +64,14 @@ export default class RoomCreepsDecorator {
 
   add(creep: CreepDecorator) {
     if (Arrays.add(this.all, creep)) {
-      this.setIdle(creep);
+      creep.setStrategy(
+        new WalkToCreepStrategy(
+          creep,
+          creep.room.room.getPositionAt(25, 25),
+          null));
+
+      Arrays.add(this.active, creep);
+
       this.refreshPopulationMaintenanceStatus();
     }
   }
@@ -106,7 +112,7 @@ export default class RoomCreepsDecorator {
 
     return new WalkToCreepStrategy(
       creep,
-      reservation.position,
+      reservation.tile.position,
       successorStrategy);
   }
 
@@ -183,16 +189,20 @@ export default class RoomCreepsDecorator {
       let offset = this._strategyOffset % this.idle.length;
       let nextIdleCreep = this.idle[offset];
 
-      Arrays.remove(this.idle, nextIdleCreep);
-
       let neededStrategy = this.getNeededStrategy(nextIdleCreep);
       if(!neededStrategy) {
-        neededStrategy = new WalkToCreepStrategy(nextIdleCreep, this.room.terrain.getTileAt(10, 10).position, new NullCreepStrategy(nextIdleCreep));
+        nextIdleCreep.setStrategy(
+          new WalkToCreepStrategy(
+            nextIdleCreep,
+            this.room.terrain.getTileAt(10, 10).position,
+            null));
+        break;
       } else {
+        Arrays.remove(this.idle, nextIdleCreep);
         Arrays.add(this.active, nextIdleCreep);
-      }
 
-      nextIdleCreep.setStrategy(neededStrategy);
+        nextIdleCreep.setStrategy(neededStrategy);
+      }
     }
 
     for (let creep of this.active) {

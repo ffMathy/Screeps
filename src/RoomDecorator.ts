@@ -18,7 +18,7 @@ export default class RoomDecorator {
   public constructionSites: ConstructionSite[];
   public spawns: SpawnDecorator[];
   public terrain: TerrainDecorator;
-  public transferrableStructures: (Structure | Spawn | Tower)[];
+  public structures: Structure[];
 
   public readonly visuals: ((visual: RoomVisual) => RoomVisual)[];
 
@@ -69,21 +69,25 @@ export default class RoomDecorator {
 
     opts.ignoreCreeps = true;
     opts.ignoreDestructibleStructures = false;
-    opts.ignoreRoads = true;
+    opts.ignoreRoads = false;
 
     return this.room.findPath(fromPos, toPos, opts);
   }
 
-  createConstructionSite(x: number, y: number, structureType: string): number {
-    let returnValue = this.room.createConstructionSite(x, y, structureType);
-    if (returnValue === 0) {
-      this.refreshConstructionSites();
-
-      let tile = this.terrain.getTileAt(x, y);
-      tile.constructionSite = this.constructionSites.find(t => t.pos.x === x && t.pos.y === y);
+  createConstructionSites(positions: RoomPosition[], structureType: string) {
+    let countBuilt = 0;
+    for(let position of positions) {
+      let tile = this.terrain.getTileAt(position);
+      if(tile.isWalkable) {
+        if(this.room.createConstructionSite(position, structureType) === OK)
+          countBuilt++;
+      }
     }
 
-    return returnValue;
+    if(countBuilt > 0)
+      this.refresh();
+
+    return countBuilt;
   }
 
   initialize() {
@@ -96,19 +100,23 @@ export default class RoomDecorator {
     this.strategy = new ConstructStructuresRoomStrategy(this);
   }
 
-  private refreshConstructionSites() {
-    if (!this.isClaimed)
-      return;
-
-    this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES);
-  }
-
   refresh() {
-    this.refreshConstructionSites();
+    if (!this.isClaimed) {
+      this.spawns = [];
+      this.constructionSites = [];
+    } else {
+      this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES);
+      for(let constructionSite of this.constructionSites) {
+        let tile = this.terrain.getTileAt(constructionSite.pos);
+        tile.constructionSite = constructionSite;
+      }
 
-    this.spawns = this.isClaimed ? this.room
-      .find(FIND_MY_SPAWNS)
-      .map((x: Spawn) => new SpawnDecorator(this.game, this, x)) : [];
+      this.terrain.onChange.fire();
+
+      this.spawns = this.room
+        .find(FIND_MY_SPAWNS)
+        .map((x: Spawn) => new SpawnDecorator(this.game, this, x));
+    }
   }
 
   getRandomUnexploredNeighbourName() {
@@ -172,7 +180,9 @@ export default class RoomDecorator {
 
   setStrategy(strategy: RoomStrategy) {
     this.strategy = strategy;
-    this.room.memory.strategy = strategy.name;
+
+    if(this.room)
+      this.room.memory.strategy = strategy.name;
   }
 
   tick() {

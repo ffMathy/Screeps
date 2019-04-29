@@ -1,23 +1,43 @@
 import Arrays from "./Arrays";
 
-export default class EventHandler<TOwner, TArguments extends any[]> {
-  private readonly listeners: ((owner: TOwner, ...args: TArguments) => void)[];
+type EventCallback<TOwner, TArguments extends any[]> = (owner: TOwner, ...args: TArguments) => void;
+
+type EventListener<TOwner, TArguments extends any[]> = {
+  callback: EventCallback<TOwner, TArguments>;
+  defer: boolean;
+}
+
+export default class EventHandler<TOwner = any, TArguments extends any[] = []> {
+  private readonly listeners: EventListener<TOwner, TArguments>[];
+
+  private static deferredHandlers = new Array<() => void>();
 
   constructor(private readonly owner: TOwner) {
     this.listeners = [];
   }
 
-  addListener(listener: (owner: TOwner, ...args: TArguments) => void) {
-    Arrays.add(this.listeners, listener);
+  static runEventHandlers() {
+    let handlerCopy = [...this.deferredHandlers];
+    this.deferredHandlers.splice(0);
+
+    for(let handler of handlerCopy)
+      handler();
   }
 
-  removeListener(listener: (owner: TOwner, ...args: TArguments) => void) {
-    Arrays.remove(this.listeners, listener);
+  addListener(listener: EventCallback<TOwner, TArguments>, defer: boolean) {
+    Arrays.add(this.listeners, {
+      callback: listener,
+      defer
+    });
   }
 
   fire(...args: TArguments) {
     for(let listener of this.listeners) {
-      listener(this.owner, ...args);
+      if(!listener.defer) {
+        listener.callback(this.owner, ...args);
+      } else {
+        Arrays.add(EventHandler.deferredHandlers, () => listener.callback(this.owner, ...args));
+      }
     }
   }
 }
