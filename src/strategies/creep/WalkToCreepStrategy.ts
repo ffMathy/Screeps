@@ -40,6 +40,8 @@ export default class WalkToCreepStrategy implements CreepStrategy {
       let leftTile = path.nextStep.getTileInDirection(leftDirection);
       let rightTile = path.nextStep.getTileInDirection(rightDirection);
 
+      //TODO: check for walls. should never try to skip left or right into a wall.
+
       let tries = 0;
       let foundFreedom = !leftTile.creep && !rightTile.creep;
       while(tries++ < 5 && !foundFreedom) {
