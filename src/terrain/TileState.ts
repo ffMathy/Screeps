@@ -69,7 +69,7 @@ export default class TileState {
   }
 
   constructor(public readonly terrain: TerrainDecorator, x: number, y: number) {
-    this.position = new RoomPosition(x, y, terrain.room.roomName);
+    this.position = terrain.room.room.getPositionAt(x, y);
     this.modifier = terrain.terrain.get(x, y);
 
     this.surroundingEnvironmentsByRadius = {};
