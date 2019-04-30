@@ -11,7 +11,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
   tick() {
     let room = this.room;
-    if(!room.room)
+    if(!room.room || !room.room.controller || !room.room.controller.my)
       return;
 
     let rawStructures = (room.room.find(FIND_STRUCTURES) as Structure[]) || [];
