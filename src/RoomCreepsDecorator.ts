@@ -201,8 +201,8 @@ export default class RoomCreepsDecorator {
 
         nextIdleCreep.strategy = neededStrategy;
       } else if(!nextIdleCreep.strategy) {
-        let minimumRadius = 4;
-        let maximumRadius = 5;
+        let minimumRadius = 3;
+        let maximumRadius = 4;
 
         let targetX = 25;
         let targetY = 25;
