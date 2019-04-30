@@ -21,6 +21,10 @@ global['removeAllConstructionSites'] = () => {
     }
 }
 
+global['getMainRoom'] = () => {
+    return GameDecorator.instance.rooms.all[0];
+};
+
 global['killAllCreepsExcept'](30);
 
 global['gameDecorator'] = GameDecorator.instance;

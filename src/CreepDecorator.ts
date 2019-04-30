@@ -15,7 +15,7 @@ export default class CreepDecorator {
   private _tile: TileState;
   private _futureTile: TileState;
 
-  private strategy: CreepStrategy;
+  private _strategy: CreepStrategy;
   private lastPosition: RoomPosition;
 
   get tile() {
@@ -23,13 +23,27 @@ export default class CreepDecorator {
   }
 
   set futureTile(value: TileState) {
-    if(this._futureTile)
+    if (this._futureTile)
       this._futureTile.futureCreep = null;
 
     this._futureTile = value;
 
-    if(this._futureTile)
+    if (this._futureTile)
       this._futureTile.futureCreep = this;
+  }
+
+  get strategy() {
+    return this._strategy;
+  }
+
+  set strategy(strategy: CreepStrategy) {
+    this._strategy = strategy;
+    this.memory.strategy = strategy ? strategy.name : '';
+    if (!strategy) {
+      this.room.creeps.setIdle(this);
+    } else {
+      this.say(strategy.name, true);
+    }
   }
 
   public get memory(): CreepMemory {
@@ -38,19 +52,11 @@ export default class CreepDecorator {
 
   constructor(
     private readonly game: GameDecorator,
-    public creep: Creep)
-  {
-    this.strategy = null;
+    public creep: Creep) {
+    this._strategy = null;
 
     this.room = game.rooms.fromCreep(creep);
     this.room.creeps.add(this);
-  }
-
-  setStrategy(strategy: CreepStrategy) {
-    this.strategy = strategy;
-    this.memory.strategy = strategy ? strategy.name : '';
-    if(strategy)
-      this.say(strategy.name, true);
   }
 
   updateRoom() {
@@ -64,61 +70,64 @@ export default class CreepDecorator {
   }
 
   tick() {
-    const oldCreep = this.creep;
-    if(this.creep)
-      this.creep = Game.creeps[this.creep.name];
+    try {
+      const oldCreep = this.creep;
+      if (this.creep)
+        this.creep = Game.creeps[this.creep.name];
 
-    if(!this.creep || oldCreep.ticksToLive <= 3) {
-      if(this._tile)
-        this._tile.creep = null;
+      if (!this.creep || oldCreep.ticksToLive <= 3) {
+        if (this._tile)
+          this._tile.creep = null;
 
-      this.futureTile = null;
+        this.futureTile = null;
 
-      this.room.creeps.remove(this);
-      if(oldCreep && oldCreep.name)
-        delete Memory.creeps[oldCreep.name];
+        this.room.creeps.remove(this);
+        if (oldCreep && oldCreep.name)
+          delete Memory.creeps[oldCreep.name];
 
-      return;
-    }
-
-    if(this.creep.room.name !== oldCreep.room.name)
-      this.updateRoom();
-
-    if(!this._tile || this.creep.pos.x !== this._tile.position.x || this.creep.pos.y !== this._tile.position.y) {
-      if(this._tile)
-        this._tile.creep = null;
-
-      this._tile = this.room.terrain.getTileAt(this.creep.pos.x, this.creep.pos.y);
-      this._tile.creep = this;
-    }
-
-    if(!this.lastPosition)
-      this.lastPosition = this.creep.pos;
-
-    if(!this.strategy)
-      this.say('!');
-
-    if(this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y) {
-      this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
-    }
-
-    if(!this.strategy)
-      return;
-
-    this.say(this.strategy.name);
-
-    let newStrategy = this.strategy.tick();
-    if(typeof newStrategy === "function") {
-      let newStrategyObject = newStrategy(this);
-      if(newStrategyObject === null) {
-        this.room.creeps.setIdle(this);
-      } else if(typeof newStrategyObject !== "undefined") {
-        this.setStrategy(newStrategyObject);
+        return;
       }
-    } else if(newStrategy === null) {
-      this.room.creeps.setIdle(this);
-    } else if(typeof newStrategy !== "undefined") {
-      this.setStrategy(newStrategy);
+
+      if (!this._strategy) {
+        this.creep.say('💤');
+        return;
+      }
+
+      if (this.creep.room.name !== oldCreep.room.name)
+        this.updateRoom();
+
+      if (!this._tile || this.creep.pos.x !== this._tile.position.x || this.creep.pos.y !== this._tile.position.y) {
+        if (this._tile)
+          this._tile.creep = null;
+
+        this._tile = this.room.terrain.getTileAt(this.creep.pos.x, this.creep.pos.y);
+        this._tile.creep = this;
+      }
+
+      if (!this.lastPosition)
+        this.lastPosition = this.creep.pos;
+
+      if (this.lastPosition.x !== this.creep.pos.x || this.lastPosition.y !== this.creep.pos.y) {
+        this.room.terrain.increaseTilePopularity(this.creep.pos.x, this.creep.pos.y);
+      }
+
+      if(this.room.creeps.enableStrategyDebugging)
+        this.say(this._strategy.name);
+
+      let newStrategy = this._strategy.tick();
+      if (typeof newStrategy === "function") {
+        let newStrategyObject = newStrategy(this);
+        if (typeof newStrategyObject !== "undefined") {
+          this.strategy = (newStrategyObject);
+        }
+      } else if (typeof newStrategy !== "undefined") {
+        this.strategy = (newStrategy);
+      }
+    } catch (ex) {
+      console.log(this.creep.name,
+        this._strategy && this._strategy.name,
+        JSON.stringify(this.creep.pos));
+      throw ex;
     }
   }
 }

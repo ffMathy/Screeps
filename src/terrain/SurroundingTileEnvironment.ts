@@ -14,7 +14,11 @@ export default class SurroundingTileEnvironment {
 
   private static lastHighwayTick: number;
 
-  constructor(private readonly radius: number, private readonly origin: TileState, tiles: TileState[]) {
+  constructor(
+    minimumRadius: number,
+    private readonly origin: TileState,
+    tiles: TileState[])
+  {
     this.availableTiles = [];
     this.occupiedTiles = [];
 
@@ -32,7 +36,7 @@ export default class SurroundingTileEnvironment {
     });
 
     this.tilesByProximity = tiles
-      .filter(x => !x.constructionSite || x.constructionSite.structureType === STRUCTURE_ROAD)
+      .filter(x => x.isWalkable)
       .map(t => {
         let path = origin.getPathTo(t.position);
         return {
@@ -41,6 +45,7 @@ export default class SurroundingTileEnvironment {
         } as TileStateEnvironmentDecorator;
       })
       .sort((a, b) => a.distanceToOrigin - b.distanceToOrigin)
+      .filter(t => t.distanceToOrigin >= (minimumRadius || 0))
       .filter(t => t.distanceToOrigin <= 1 || (t.tile.position.x % 2 === 1 && t.tile.position.y % 2 === 0));
 
     for (let tileDecorator of this.tilesByProximity) {
@@ -52,12 +57,9 @@ export default class SurroundingTileEnvironment {
   }
 
   private makeHighways() {
-    if(SurroundingTileEnvironment.lastHighwayTick && SurroundingTileEnvironment.lastHighwayTick >= Game.time - 10)
-      return;
+    console.log('make highways');
 
-    SurroundingTileEnvironment.lastHighwayTick = Game.time;
-
-    if(this.origin.terrain.room.constructionSites.length > 0 || this.radius <= 1)
+    if(this.origin.terrain.room.constructionSites.length > 0)
       return;
 
     for(let source of this.origin.terrain.room.sources) {
@@ -74,13 +76,17 @@ export default class SurroundingTileEnvironment {
   }
 
   private makeHighwayTo(position: RoomPosition) {
-    let originPosition = this.origin.position;
-    if(originPosition.x === position.x && originPosition.y === position.y)
-      return false;
+    if(SurroundingTileEnvironment.lastHighwayTick && SurroundingTileEnvironment.lastHighwayTick >= Game.time - 10)
+      return true;
 
-    let positions = this.origin.terrain.room
-      .findPath(originPosition, position)
-      .map(step => this.origin.terrain.room.room.getPositionAt(step.x, step.y));
+    SurroundingTileEnvironment.lastHighwayTick = Game.time;
+
+    console.log('make highway', JSON.stringify(this.origin.position), JSON.stringify(position));
+
+    let originPosition = this.origin.position;
+    let positions = [originPosition, ...this.origin.terrain.room
+      .findWalkablePath(originPosition, position)
+      .map(step => this.origin.terrain.room.room.getPositionAt(step.x, step.y))];
     return this.origin.terrain.room.createConstructionSites(positions, STRUCTURE_ROAD) > 0;
   }
 

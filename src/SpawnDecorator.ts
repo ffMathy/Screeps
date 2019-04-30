@@ -51,33 +51,30 @@ export default class SpawnDecorator {
         if(this.getSpawnDetails())
             return;
 
-        let nameExistsAlready = false;
-        do {
-            let creepName = 'creep-' + (Game.time + SpawnDecorator.nameOffset++);
-            let spawnResult = Game.spawns[this.spawnName].spawnCreep(
-                qualities,
-                creepName,
-                {
-                    memory: {
-                    }
-                });
+        let creepName = 'creep-' + (Game.time + SpawnDecorator.nameOffset++);
+        let spawnResult = Game.spawns[this.spawnName].spawnCreep(
+            qualities,
+            creepName,
+            {
+                memory: {
+                }
+            });
 
-            if(spawnResult === 0) {
-                let creepSpawned = Game.creeps[creepName];
-                if(!creepSpawned)
-                    throw new Error('Could not fetch spawned creep.');
+        if(spawnResult === 0) {
+            let creepSpawned = Game.creeps[creepName];
+            if(!creepSpawned)
+                throw new Error('Could not fetch spawned creep.');
 
-                let creepDecorator = new CreepDecorator(this.game, creepSpawned);
-                this.room.creeps.add(creepDecorator);
-                this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
-            } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
-                this.room.sayAt(Game.spawns[this.spawnName], '⚡');
-            } else if(spawnResult === ERR_NAME_EXISTS) {
-                nameExistsAlready = true;
-            } else {
-                throw new Error('Could not spawn creep: ' + spawnResult);
-            }
-        } while(nameExistsAlready);
+            let creepDecorator = new CreepDecorator(this.game, creepSpawned);
+            this.room.creeps.add(creepDecorator);
+            this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
+        } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
+            this.room.sayAt(Game.spawns[this.spawnName], '⚡');
+        } else if(spawnResult === ERR_NAME_EXISTS) {
+            return;
+        } else {
+            throw new Error('Could not spawn creep: ' + spawnResult);
+        }
     }
 
     maintainPopulation() {

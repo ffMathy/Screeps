@@ -6,7 +6,7 @@ import TerrainDecorator from "./TerrainDecorator";
 
 export default class TileState {
   private surroundingEnvironmentsByRadius: {
-    [key: number]: SurroundingTileEnvironment;
+    [key: string]: SurroundingTileEnvironment;
   };
 
   private _creep: CreepDecorator;
@@ -29,14 +29,16 @@ export default class TileState {
       distance: number;
       nextStep: TileState;
       nextDirection: Direction;
+      nextSteps: Array<PathStep>;
     };
   };
 
   constructionSite: ConstructionSite;
+  wall: StructureWall;
   structure: Structure;
 
   get isWalkable() {
-    return this.modifier !== TERRAIN_MASK_WALL;
+    return this.modifier !== TERRAIN_MASK_WALL && !this.structure;
   }
 
   get creep() {
@@ -78,9 +80,10 @@ export default class TileState {
     terrain.onChange.addListener(() => this.pathsTo = {}, false);
   }
 
-  getSurroundingEnvironment(radius: number) {
-    if (typeof this.surroundingEnvironmentsByRadius[radius] !== "undefined")
-      return this.surroundingEnvironmentsByRadius[radius];
+  getSurroundingEnvironment(radius: number, minimumRadius: number) {
+    let environmentKey = radius + '-' + minimumRadius;
+    if (typeof this.surroundingEnvironmentsByRadius[environmentKey] !== "undefined")
+      return this.surroundingEnvironmentsByRadius[environmentKey];
 
     //TODO: for all areas larger than radius 1, use only every 2nd tile, so that every creep can move past eachother.
 
@@ -97,8 +100,8 @@ export default class TileState {
       .filter(x => x.terrain !== "wall")
       .map(t => this.terrain.getTileAt(t.x, t.y));
 
-    this.surroundingEnvironmentsByRadius[radius] = new SurroundingTileEnvironment(radius, this, tiles);
-    return this.surroundingEnvironmentsByRadius[radius];
+    this.surroundingEnvironmentsByRadius[environmentKey] = new SurroundingTileEnvironment(minimumRadius, this, tiles);
+    return this.surroundingEnvironmentsByRadius[environmentKey];
   }
 
   getTileInDirection(direction: Direction): TileState {
@@ -116,17 +119,16 @@ export default class TileState {
     let nextStep: TileState;
     let nextDirection: Direction;
     let distance: number;
+    let nextSteps: Array<PathStep>;
 
-    let hasReachedDestination =
-      targetPosition.x === this.position.x &&
-      targetPosition.y === this.position.y;
-
-    if (hasReachedDestination) {
+    let steps = this.terrain.room.findWalkablePath(this.position, targetPosition);
+    if (steps.length === 0) {
       nextDirection = null;
       nextStep = null;
       distance = null;
+      nextSteps = [];
     } else {
-      let steps = this.terrain.room.findPath(this.position, targetPosition);
+      nextSteps = steps;
 
       let firstStep = steps[0];
       nextStep = this.terrain.getTileAt(firstStep.x, firstStep.y);
@@ -138,7 +140,8 @@ export default class TileState {
     this.pathsTo[positionIndex] = !nextStep ? null : {
       distance: distance,
       nextStep: nextStep,
-      nextDirection: nextDirection
+      nextDirection: nextDirection,
+      nextSteps: nextSteps
     };
 
     return this.pathsTo[positionIndex];

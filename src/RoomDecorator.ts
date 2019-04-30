@@ -66,7 +66,7 @@ export default class RoomDecorator {
     this._allNeighbouringRooms = [];
   }
 
-  findPath(fromPos: RoomPosition, toPos: RoomPosition, opts?: FindPathOpts): PathStep[] {
+  findWalkablePath(fromPos: RoomPosition, toPos: RoomPosition, opts?: FindPathOpts): PathStep[] {
     if(!opts)
       opts = {};
 
@@ -74,7 +74,15 @@ export default class RoomDecorator {
     opts.ignoreDestructibleStructures = false;
     opts.ignoreRoads = false;
 
-    return this.room.findPath(fromPos, toPos, opts);
+    let path = this.room.findPath(fromPos, toPos, opts);
+    if(path.length > 0) {
+      let lastStep = path[path.length-1];
+      let lastTile = this.terrain.getTileAt(lastStep.x, lastStep.y);
+      if(!lastTile.isWalkable)
+        path.splice(path.length-1, 1);
+    }
+
+    return path;
   }
 
   createConstructionSites(positions: RoomPosition[], structureType: string) {
@@ -122,7 +130,11 @@ export default class RoomDecorator {
       this.structures = this.room.find(FIND_MY_STRUCTURES);
       for(let structure of this.structures) {
         let tile = this.terrain.getTileAt(structure.pos);
-        tile.structure = structure;
+        if(structure.structureType === STRUCTURE_WALL) {
+          tile.wall = structure as StructureWall;
+        } else {
+          tile.structure = structure;
+        }
       }
 
       this.spawns = this.room

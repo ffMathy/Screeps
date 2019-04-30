@@ -38,28 +38,33 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     let direction = path.nextDirection;
     this.direction = this.getDirectionEmojiFromDirection(direction);
 
-    if(path.nextStep.structure) {
+    try {
+      if(path.nextStep.structure) {
+        throw new Error('Trying to walk into structure - perhaps the terrain was not refreshed?');
+      }
+
+      if(path.nextStep.creep || path.nextStep.structure) {
+        direction = Math.floor(Math.random() * 7.5) + 1;
+        this.direction += this.getDirectionEmojiFromDirection(direction);
+      }
+
+      let moveResult = this.creep.creep.move(direction);
+      if(moveResult === ERR_BUSY) {
+        //still being spawned - ignore.
+        return;
+      } else if(moveResult === ERR_TIRED) {
+        return;
+      }
+
+      if(moveResult !== OK) {
+        throw new Error('Move error: ' + moveResult);
+      }
+    } catch(ex) {
       console.log(this.creep.creep.name,
         this.successorStrategy && this.successorStrategy.name,
-        JSON.stringify(path.nextStep.position));
-      throw new Error('Trying to walk into structure - perhaps the terrain was not refreshed?');
-    }
-
-    if(path.nextStep.creep || path.nextStep.structure) {
-      direction = Math.floor(Math.random() * 7.5) + 1;
-      this.direction += this.getDirectionEmojiFromDirection(direction);
-    }
-
-    let moveResult = this.creep.creep.move(direction);
-    if(moveResult === ERR_BUSY) {
-      //still being spawned - ignore.
-      return;
-    } else if(moveResult === ERR_TIRED) {
-      return;
-    }
-
-    if(moveResult !== OK) {
-      throw new Error('Move error: ' + moveResult);
+        JSON.stringify(path.nextStep.position),
+        JSON.stringify(path.nextSteps[path.nextSteps.length-1]));
+      throw ex;
     }
   }
 
