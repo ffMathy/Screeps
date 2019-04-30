@@ -88,17 +88,32 @@ export default class SurroundingTileEnvironment {
     if(Math.round(center.x) === 0 && Math.round(center.y) === 0)
       return origin;
 
-    let multiplier = 1.5;
+    let multiplierX = 1.5;
+    let multiplierY = 1.5;
 
     let getNewCenter = () => ({
-      x: Math.round(center.x * multiplier) + origin.position.x,
-      y: Math.round(center.y * multiplier) + origin.position.y
+      x: Math.round(center.x * multiplierX) + origin.position.x,
+      y: Math.round(center.y * multiplierY) + origin.position.y
     });
 
     let newCenter = getNewCenter();
     let minimumRadius = 3;
+    let multiplierIncrement = 0.2;
+
     while(Math.abs(newCenter.x - origin.position.x) <= minimumRadius && Math.abs(newCenter.y - origin.position.y) <= minimumRadius) {
-      multiplier += 0.2;
+      multiplierX += multiplierIncrement;
+      multiplierY += multiplierIncrement;
+
+      newCenter = getNewCenter();
+    }
+
+    while(Math.abs(newCenter.x - origin.position.x) === 1) {
+      multiplierX += multiplierIncrement;
+      newCenter = getNewCenter();
+    }
+
+    while(Math.abs(newCenter.y - origin.position.y) === 1) {
+      multiplierY += multiplierIncrement;
       newCenter = getNewCenter();
     }
 
