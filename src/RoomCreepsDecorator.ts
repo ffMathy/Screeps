@@ -107,10 +107,15 @@ export default class RoomCreepsDecorator {
     if(viaPosition.x === position.x && viaPosition.y === position.y)
       viaPosition = null;
 
+    let tilesToAvoid = reservation.tilesGroupedByProximity[minimumRadius];
+    let availableTile = reservation.availableTiles[0];
+    Arrays.remove(tilesToAvoid, availableTile);
+
     return new WalkToCreepStrategy(
       creep,
       viaPosition,
-      reservation.availableTiles[0].tile.position,
+      availableTile.tile.position,
+      tilesToAvoid.map(t => t.tile.position),
       successorStrategy);
   }
 

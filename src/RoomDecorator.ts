@@ -74,6 +74,18 @@ export default class RoomDecorator {
     opts.ignoreDestructibleStructures = false;
     opts.ignoreRoads = false;
 
+    if(opts.avoid) {
+      let avoid = opts.avoid;
+      delete opts.avoid;
+
+      opts.costCallback = (_roomName, costMatrix) => {
+        for(let avoidPosition of avoid)
+          costMatrix.set(avoidPosition.x, avoidPosition.y, 255);
+
+        return costMatrix;
+      }
+    }
+
     let path = this.room.findPath(fromPos, toPos, opts);
     if(path.length > 0) {
       let lastStep = path[path.length-1];

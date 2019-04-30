@@ -8,7 +8,9 @@ export interface TileStateEnvironmentDecorator {
 }
 
 export default class SurroundingTileEnvironment {
-  readonly tilesByProximity: TileStateEnvironmentDecorator[];
+  readonly tilesOrderedByProximity: TileStateEnvironmentDecorator[];
+  readonly tilesGroupedByProximity: {[proximity: number]: TileStateEnvironmentDecorator[]};
+
   readonly availableTiles: TileStateEnvironmentDecorator[];
   readonly occupiedTiles: TileStateEnvironmentDecorator[];
 
@@ -47,10 +49,11 @@ export default class SurroundingTileEnvironment {
       if (this.occupiedTiles.length === 0 || (origin.constructionSite && origin.constructionSite.structureType === STRUCTURE_ROAD))
         return;
 
-      return visual.text(this.occupiedTiles.length + '/' + this.tilesByProximity.length, origin.position.x + 1, origin.position.y + 1);
+      return visual.text(this.occupiedTiles.length + '/' + this.tilesOrderedByProximity.length, origin.position.x + 1, origin.position.y + 1);
     });
 
-    this.tilesByProximity = walkableTiles
+    this.tilesGroupedByProximity = [];
+    this.tilesOrderedByProximity = walkableTiles
       .map(t => {
         let path = origin.getPathTo(t.position);
         return {
@@ -62,7 +65,12 @@ export default class SurroundingTileEnvironment {
       .filter(t => t.distanceToOrigin >= (minimumRadius || 0))
       .filter(t => t.distanceToOrigin <= 1 || (t.tile.position.x % 2 === 1 && t.tile.position.y % 2 === 0));
 
-    for (let tileDecorator of this.tilesByProximity) {
+    for (let tileDecorator of this.tilesOrderedByProximity) {
+      if(!this.tilesGroupedByProximity[tileDecorator.distanceToOrigin])
+        this.tilesGroupedByProximity[tileDecorator.distanceToOrigin] = [];
+
+      Arrays.add(this.tilesGroupedByProximity[tileDecorator.distanceToOrigin], tileDecorator);
+
       tileDecorator.tile.onCreepChanged.addListener(this.onTileCreepChanged.bind(this, tileDecorator), false);
       tileDecorator.tile.onFutureCreepChanged.addListener(this.onTileCreepChanged.bind(this, tileDecorator), false);
 

@@ -25,7 +25,7 @@ export default class TileState {
   readonly position: RoomPosition;
 
   private pathsTo: {
-    [positionIndex: number]: {
+    [positionKey: string]: {
       distance: number;
       nextStep: TileState;
       nextDirection: Direction;
@@ -110,9 +110,10 @@ export default class TileState {
     return this.terrain.getTileAt(this.position.x + position.x, this.position.y + position.y);
   }
 
-  getPathTo(targetPosition: RoomPosition) {
+  getPathTo(targetPosition: RoomPosition, avoid: RoomPosition[] = []) {
     let positionIndex = Coordinates.roomPositionToNumber(targetPosition);
-    let path = this.pathsTo[positionIndex];
+    let key = positionIndex + "-" + avoid.length;
+    let path = this.pathsTo[key];
 
     if (typeof path !== "undefined")
       return path;
@@ -122,7 +123,10 @@ export default class TileState {
     let distance: number;
     let nextSteps: Array<PathStep>;
 
-    let steps = this.terrain.room.findWalkablePath(this.position, targetPosition);
+    let steps = this.terrain.room.findWalkablePath(this.position, targetPosition, {
+      avoid
+    });
+
     if (steps.length === 0) {
       nextDirection = null;
       nextStep = null;
@@ -138,13 +142,13 @@ export default class TileState {
       distance = steps.length;
     }
 
-    this.pathsTo[positionIndex] = !nextStep ? null : {
+    this.pathsTo[key] = !nextStep ? null : {
       distance: distance,
       nextStep: nextStep,
       nextDirection: nextDirection,
       nextSteps: nextSteps
     };
 
-    return this.pathsTo[positionIndex];
+    return this.pathsTo[key];
   }
 }
