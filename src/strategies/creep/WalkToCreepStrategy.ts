@@ -17,6 +17,7 @@ export default class WalkToCreepStrategy implements CreepStrategy {
 
   constructor(
     private readonly creep: CreepDecorator,
+    private via: RoomPosition,
     private readonly targetPosition: RoomPosition,
     private readonly successorStrategy: CreepStrategy
   ) {
@@ -30,9 +31,19 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     if(!this.creep.futureTile)
       this.creep.futureTile = this.creep.room.terrain.getTileAt(this.targetPosition);
 
-    let path = this.creep.tile.getPathTo(this.targetPosition);
-    if(path === null) {
-      return this.successorStrategy;
+    let path = this.creep.tile.getPathTo(this.via || this.targetPosition);
+
+    let isFinished = this.via ?
+      !path || path.distance <= 1 :
+      path === null;
+
+    if(isFinished) {
+      if(this.via) {
+        this.via = null;
+        return;
+      } else {
+        return this.successorStrategy;
+      }
     }
 
     let direction = path.nextDirection;

@@ -34,6 +34,7 @@ export default class TileState {
   };
 
   constructionSite: ConstructionSite;
+  road: StructureRoad;
   wall: StructureWall;
   structure: Structure;
 
@@ -80,7 +81,7 @@ export default class TileState {
     terrain.onChange.addListener(() => this.pathsTo = {}, false);
   }
 
-  getSurroundingEnvironment(radius: number, minimumRadius: number) {
+  getSurroundingEnvironment(radius: number, minimumRadius: number, avoidRoads: boolean = false) {
     let environmentKey = radius + '-' + minimumRadius;
     if (typeof this.surroundingEnvironmentsByRadius[environmentKey] !== "undefined")
       return this.surroundingEnvironmentsByRadius[environmentKey];
@@ -100,7 +101,7 @@ export default class TileState {
       .filter(x => x.terrain !== "wall")
       .map(t => this.terrain.getTileAt(t.x, t.y));
 
-    this.surroundingEnvironmentsByRadius[environmentKey] = new SurroundingTileEnvironment(minimumRadius, this, tiles);
+    this.surroundingEnvironmentsByRadius[environmentKey] = new SurroundingTileEnvironment(radius, minimumRadius, this, tiles, avoidRoads);
     return this.surroundingEnvironmentsByRadius[environmentKey];
   }
 

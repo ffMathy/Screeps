@@ -79,14 +79,14 @@ export default class RoomCreepsDecorator {
     }
   }
 
-  private reserveSpot(creep: CreepDecorator, position: RoomPosition, radius: number, minimumRadius: number) {
+  private reserveSpot(creep: CreepDecorator, position: RoomPosition, radius: number, minimumRadius: number, avoidRoads: boolean = false) {
     let sourceTile = creep.room.terrain.getTileAt(position);
 
-    let parkingLot = sourceTile.getSurroundingEnvironment(radius, minimumRadius);
+    let parkingLot = sourceTile.getSurroundingEnvironment(radius, minimumRadius, avoidRoads);
     if (parkingLot.availableTiles.length === 0)
       return null;
 
-    return parkingLot.availableTiles[0];
+    return parkingLot;
   }
 
   private walkToIfPossible(
@@ -94,14 +94,23 @@ export default class RoomCreepsDecorator {
     position: RoomPosition,
     radius: number,
     minimumRadius: number,
-    successorStrategy: CreepStrategy) {
-    let reservation = this.reserveSpot(creep, position, radius, minimumRadius);
+    successorStrategy: CreepStrategy)
+  {
+    let reservation = this.reserveSpot(creep, position, radius, minimumRadius, !successorStrategy);
     if (!reservation)
       return null;
 
+    if(!reservation.entrypoint)
+      throw new Error('Entrypoint for reservation is not present.');
+
+    let viaPosition = reservation.entrypoint.position;
+    if(viaPosition.x === position.x && viaPosition.y === position.y)
+      viaPosition = null;
+
     return new WalkToCreepStrategy(
       creep,
-      reservation.tile.position,
+      viaPosition,
+      reservation.availableTiles[0].tile.position,
       successorStrategy);
   }
 

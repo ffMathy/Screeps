@@ -12,15 +12,30 @@ export default class SurroundingTileEnvironment {
   readonly availableTiles: TileStateEnvironmentDecorator[];
   readonly occupiedTiles: TileStateEnvironmentDecorator[];
 
+  readonly entrypoint: TileState;
+
   private static lastHighwayTick: number;
 
   constructor(
+    private radius: number,
     minimumRadius: number,
     private readonly origin: TileState,
-    tiles: TileState[])
+    tiles: TileState[],
+    avoidRoads: boolean = false)
   {
     this.availableTiles = [];
     this.occupiedTiles = [];
+
+    let walkableTiles = tiles
+      .filter(x => x.isWalkable)
+      .filter(x => {
+        if(avoidRoads)
+          return !x.road;
+
+        return true;
+      });
+
+    this.entrypoint = this.getEntryPoint(origin, walkableTiles);
 
     if(!SurroundingTileEnvironment.lastHighwayTick)
       SurroundingTileEnvironment.lastHighwayTick = Game.time;
@@ -35,8 +50,7 @@ export default class SurroundingTileEnvironment {
       return visual.text(this.occupiedTiles.length + '/' + this.tilesByProximity.length, origin.position.x + 1, origin.position.y + 1);
     });
 
-    this.tilesByProximity = tiles
-      .filter(x => x.isWalkable)
+    this.tilesByProximity = walkableTiles
       .map(t => {
         let path = origin.getPathTo(t.position);
         return {
@@ -56,11 +70,62 @@ export default class SurroundingTileEnvironment {
     }
   }
 
-  private makeHighways() {
-    console.log('make highways');
+  //TODO: get gravity point
 
-    if(this.origin.terrain.room.constructionSites.length > 0)
+  private getCenter(origin: TileState, tiles: TileState[]) {
+    let x = tiles.map(x => x.position.x - origin.position.x);
+    let avgX = x.reduce((a, b) => a + b) / x.length;
+
+    let y = tiles.map(x => x.position.y - origin.position.y);
+    let avgY = y.reduce((a, b) => a + b) / y.length;
+
+    let center = { x: avgX, y: avgY };
+    return center;
+  }
+
+  private getEntryPoint(origin: TileState, tiles: TileState[]) {
+    let center = this.getCenter(origin, tiles);
+    if(Math.round(center.x) === 0 && Math.round(center.y) === 0)
+      return origin;
+
+    let multiplier = 1.5;
+
+    let getNewCenter = () => ({
+      x: Math.round(center.x * multiplier) + origin.position.x,
+      y: Math.round(center.y * multiplier) + origin.position.y
+    });
+
+    let newCenter = getNewCenter();
+    let minimumRadius = 3;
+    while(Math.abs(newCenter.x - origin.position.x) <= minimumRadius && Math.abs(newCenter.y - origin.position.y) <= minimumRadius) {
+      multiplier += 0.2;
+      newCenter = getNewCenter();
+    }
+
+    let tile = origin.terrain.getTileAt(newCenter.x, newCenter.y);
+    if(tile.position.x !== origin.position.x || tile.position.y !== origin.position.y) {
+      tile.terrain.room.visuals.push(v => {
+        let color = this.availableTiles.length > 0 ? '#00ff00' : '#ff0000';
+        return v.circle(tile.position, {
+            radius: 1,
+            fill: null,
+            stroke: color,
+            lineStyle: "dashed"
+          }).line(tile.position, origin.position, {
+            color: color,
+            lineStyle: "dotted"
+          });
+        });
+      }
+
+    return tile;
+  }
+
+  private makeHighways() {
+    if(this.origin.terrain.room.constructionSites.length > 0 || this.radius <= 1)
       return;
+
+    console.log('make highways');
 
     for(let source of this.origin.terrain.room.sources) {
       if(this.makeHighwayTo(source.pos))
@@ -76,7 +141,7 @@ export default class SurroundingTileEnvironment {
   }
 
   private makeHighwayTo(position: RoomPosition) {
-    if(SurroundingTileEnvironment.lastHighwayTick && SurroundingTileEnvironment.lastHighwayTick >= Game.time - 10)
+    if(SurroundingTileEnvironment.lastHighwayTick && SurroundingTileEnvironment.lastHighwayTick >= Game.time - 1)
       return true;
 
     SurroundingTileEnvironment.lastHighwayTick = Game.time;

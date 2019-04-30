@@ -127,11 +127,13 @@ export default class RoomDecorator {
         tile.constructionSite = constructionSite;
       }
 
-      this.structures = this.room.find(FIND_MY_STRUCTURES);
+      this.structures = this.room.find(FIND_STRUCTURES);
       for(let structure of this.structures) {
         let tile = this.terrain.getTileAt(structure.pos);
         if(structure.structureType === STRUCTURE_WALL) {
           tile.wall = structure as StructureWall;
+        } else if(structure.structureType === STRUCTURE_ROAD) {
+          tile.road = structure as StructureRoad;
         } else {
           tile.structure = structure;
         }
