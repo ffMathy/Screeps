@@ -92,7 +92,19 @@ export default class SurroundingTileEnvironment {
   }
 
   private getEntryPoint(origin: TileState, tiles: TileState[]) {
+    if(!origin)
+      throw new Error('No origin set.');
+
+    if(origin.constructionSite)
+      return origin;
+
+    if(!origin.position)
+      throw new Error('No origin position set.');
+
     let center = this.getCenter(origin, tiles);
+    if(!center)
+      throw new Error('No center found.');
+
     if(Math.round(center.x) === 0 && Math.round(center.y) === 0)
       return origin;
 
@@ -125,7 +137,13 @@ export default class SurroundingTileEnvironment {
       newCenter = getNewCenter();
     }
 
+    if(!newCenter)
+      throw new Error('New center not found.');
+
     let tile = origin.terrain.getTileAt(newCenter.x, newCenter.y);
+    if(!tile)
+      return origin;
+
     if(tile.position.x !== origin.position.x || tile.position.y !== origin.position.y) {
       tile.terrain.room.visuals.push(v => {
         let color = this.availableTiles.length > 0 ? '#00ff00' : '#ff0000';

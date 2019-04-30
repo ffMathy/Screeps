@@ -10,8 +10,8 @@ export const enum Direction {
 }
 
 export default class Coordinates {
-    static roomPositionToNumber(position: RoomPosition) {
-        return position.x + 50 * position.y;
+    static roomPositionToNumber(x: number, y: number) {
+        return x + 50 * y;
     }
 
     static rotateDirectionRight(direction: Direction) {

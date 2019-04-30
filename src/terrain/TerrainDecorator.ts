@@ -2,6 +2,7 @@ import RoomDecorator from "RoomDecorator";
 import profile from "profiler";
 import TileState from "terrain/TileState";
 import EventHandler from "helpers/EventHandler";
+import Coordinates from "helpers/Coordinates";
 
 declare interface Terrain {
   get(x: number, y: number): number
@@ -30,7 +31,10 @@ export default class TerrainDecorator {
       y = xOrPosition.y;
     }
 
-    let i = x + 50 * y;
+    x = Math.max(0, Math.min(49, x));
+    y = Math.max(0, Math.min(49, y));
+
+    let i = Coordinates.roomPositionToNumber(x, y);
     let tile = this.tiles[i];
     if (!tile) {
       tile = this.tiles[i] = new TileState(
