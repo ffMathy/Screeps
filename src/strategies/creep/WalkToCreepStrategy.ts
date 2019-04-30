@@ -34,7 +34,10 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     let direction = path.nextDirection;
     this.direction = this.getDirectionEmojiFromDirection(direction);
 
-    if(path.nextStep.creep) {
+    if(path.nextStep.structure)
+      console.log('structure found - should not happen', Game.time);
+
+    if(path.nextStep.creep || path.nextStep.structure) {
       direction = Math.floor(Math.random() * 7.5) + 1;
       this.direction = this.getDirectionEmojiFromDirection(direction);
     }
