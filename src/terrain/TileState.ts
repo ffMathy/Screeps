@@ -75,7 +75,7 @@ export default class TileState {
     this.onFutureCreepChanged = new EventHandler(this);
 
     this.pathsTo = {};
-    terrain.onChange.addListener(() => this.pathsTo = {}, true);
+    terrain.onChange.addListener(() => this.pathsTo = {}, false);
   }
 
   getSurroundingEnvironment(radius: number) {
@@ -113,10 +113,6 @@ export default class TileState {
     if (typeof path !== "undefined")
       return path;
 
-    let isClose =
-      Math.abs(targetPosition.x - this.position.x) <= 1 &&
-      Math.abs(targetPosition.y - this.position.y) <= 1;
-
     let nextStep: TileState;
     let nextDirection: Direction;
     let distance: number;
@@ -129,13 +125,7 @@ export default class TileState {
       nextDirection = null;
       nextStep = null;
       distance = null;
-    }
-    else if (isClose) {
-      nextDirection = Coordinates.directionFromCoordinates(this.position, targetPosition);
-      nextStep = this.getTileInDirection(nextDirection);
-      distance = 1;
-    }
-    else {
+    } else {
       let steps = this.terrain.room.findPath(this.position, targetPosition);
 
       let firstStep = steps[0];

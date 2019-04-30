@@ -2,6 +2,7 @@ import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 import profile from "profiler";
 import { Direction } from "helpers/Coordinates";
+import GameDecorator from "GameDecorator";
 
 @profile
 export default class WalkToCreepStrategy implements CreepStrategy {
@@ -23,6 +24,9 @@ export default class WalkToCreepStrategy implements CreepStrategy {
   }
 
   tick() {
+    if(GameDecorator.instance.cpuUsedPercentage > 0.5)
+      return;
+
     if(!this.creep.futureTile)
       this.creep.futureTile = this.creep.room.terrain.getTileAt(this.targetPosition);
 
@@ -34,12 +38,16 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     let direction = path.nextDirection;
     this.direction = this.getDirectionEmojiFromDirection(direction);
 
-    if(path.nextStep.structure)
-      console.log('structure found - should not happen', Game.time);
+    if(path.nextStep.structure) {
+      console.log(this.creep.creep.name,
+        this.successorStrategy && this.successorStrategy.name,
+        JSON.stringify(path.nextStep.position));
+      throw new Error('Trying to walk into structure - perhaps the terrain was not refreshed?');
+    }
 
     if(path.nextStep.creep || path.nextStep.structure) {
       direction = Math.floor(Math.random() * 7.5) + 1;
-      this.direction = this.getDirectionEmojiFromDirection(direction);
+      this.direction += this.getDirectionEmojiFromDirection(direction);
     }
 
     let moveResult = this.creep.creep.move(direction);

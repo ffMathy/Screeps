@@ -19,7 +19,7 @@ export default class RoomCreepsDecorator {
   private _strategyOffset: number;
 
   public get isPopulationMaintained() {
-    return this.all.length >= 15;
+    return this.all.length >= 25;
   }
 
   constructor(
@@ -79,14 +79,8 @@ export default class RoomCreepsDecorator {
   private refreshPopulationMaintenanceStatus() {
     if (this.isPopulationMaintained || !this.room.room || !this.room.room.controller) {
       Arrays.remove(this.rooms.lowPopulation, this.room);
-
-      if (this.room.room)
-        this.room.sayAt(this.room.room.controller, '😃');
     } else {
       Arrays.add(this.rooms.lowPopulation, this.room);
-
-      if (this.room.room)
-        this.room.sayAt(this.room.room.controller, '😟');
     }
   }
 

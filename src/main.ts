@@ -1,4 +1,5 @@
-global['__PROFILER_ENABLED__'] = true;
+let doProfiling = false;
+global['__PROFILER_ENABLED__'] = doProfiling;
 
 import GameDecorator from 'GameDecorator';
 import * as Profiler from "profiler";
@@ -24,24 +25,35 @@ global['killAllCreepsExcept'](30);
 
 global['gameDecorator'] = GameDecorator.instance;
 
-const profiler = Profiler.init();
-profiler.stop();
-profiler.clear();
+if(doProfiling) {
+    const profiler = Profiler.init();
+    profiler.stop();
+    profiler.clear();
 
-global['profiler'] = profiler;
+    global['profiler'] = profiler;
+}
 
 console.log('loaded');
 
-let profiling = false;
+let shouldSkip = false;
+let isProfiling = false;
 let startTick = Game.time;
 
 export const loop = function() {
-    GameDecorator.instance.tick();
+    if(shouldSkip)
+        return;
 
-    if((Game.time - startTick) > 30 && !profiling) {
-        profiling = true;
+    try {
+        GameDecorator.instance.tick();
+    } catch(ex) {
+        shouldSkip = true;
+        throw ex;
+    }
+
+    if(doProfiling && (Game.time - startTick) > 30 && !isProfiling) {
+        isProfiling = true;
 
         console.log('profiler started');
-        profiler.start();
+        global['profiler'].start();
     }
 }

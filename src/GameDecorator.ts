@@ -1,15 +1,17 @@
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
 import profile from "profiler";
-import EventHandler from "helpers/EventHandler";
+import DeferHelper from "helpers/DeferHelper";
 
 @profile
 export default class GameDecorator {
-  public readonly availableCpu: number;
-
   public readonly rooms: RoomsDecorator;
 
   private static _instance: GameDecorator;
+
+  public get cpuUsedPercentage() {
+    return Game.cpu.getUsed() / Game.cpu.tickLimit;
+  }
 
   public get tickCount() {
     return Game.time;
@@ -31,15 +33,13 @@ export default class GameDecorator {
       this.rooms.detectRoom(game.creeps[name].room.name).creeps.add(
         new CreepDecorator(this, Game.creeps[name]));
     }
-
-    this.availableCpu = game.cpu.limit;
   }
 
   tick() {
     this.game = Game;
 
-    this.rooms.tick();
+    DeferHelper.run();
 
-    EventHandler.runEventHandlers();
+    this.rooms.tick();
   }
 }

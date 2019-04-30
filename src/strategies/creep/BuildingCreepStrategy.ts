@@ -23,14 +23,11 @@ export default class BuildingCreepStrategy implements CreepStrategy {
       if(!tile.creep) {
         let buildResult = this.creep.creep.build(target);
         if (buildResult === OK) {
-          tile.constructionSite = null;
           target = Game.getObjectById(target.id);
-          if(!target || target.progress >= target.progressTotal) {
+          if(!target || typeof target.progress === 'undefined' || target.progress >= target.progressTotal) {
             this.creep.room.refresh();
             return null;
           }
-        } else if(buildResult === ERR_INVALID_TARGET) {
-          return null;
         } else {
           throw new Error('Build error: ' + buildResult);
         }

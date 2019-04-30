@@ -5,6 +5,7 @@ import TerrainDecorator from "terrain/TerrainDecorator";
 import ConstructStructuresRoomStrategy from "strategies/room/ConstructStructuresRoomStrategy";
 import RoomCreepsDecorator from "RoomCreepsDecorator";
 import profile from "profiler";
+import DeferHelper from "helpers/DeferHelper";
 
 export interface RoomStrategy {
   readonly name: string;
@@ -25,6 +26,8 @@ export default class RoomDecorator {
   public readonly creeps: RoomCreepsDecorator;
 
   private strategy: RoomStrategy;
+
+  private lastRefreshTick: number;
 
   private _neighbouringRoomsByDirection: { [direction: string]: RoomDecorator };
   private _allNeighbouringRooms: RoomDecorator[];
@@ -96,11 +99,16 @@ export default class RoomDecorator {
 
     this.creeps.initialize()
 
-    this.refresh();
+    this.refreshNow();
     this.strategy = new ConstructStructuresRoomStrategy(this);
   }
 
-  refresh() {
+  private refreshNow() {
+    if(this.lastRefreshTick && Game.time <= this.lastRefreshTick)
+      return;
+
+    this.lastRefreshTick = Game.time;
+
     if (!this.isClaimed) {
       this.spawns = [];
       this.constructionSites = [];
@@ -121,8 +129,14 @@ export default class RoomDecorator {
         .find(FIND_MY_SPAWNS)
         .map((x: Spawn) => new SpawnDecorator(this.game, this, x));
 
+      console.log('room refresh');
       this.terrain.onChange.fire();
     }
+  }
+
+  refresh() {
+    this.refreshNow();
+    DeferHelper.add(() => this.refreshNow());
   }
 
   getRandomUnexploredNeighbourName() {
@@ -160,6 +174,9 @@ export default class RoomDecorator {
     if(!object || !object.pos || !this.room)
       return;
 
+    if(this.room.visual.getSize() >= 512000)
+      return;
+
     this.room.visual.text(
       text,
       object.pos.x + 1,
@@ -193,8 +210,11 @@ export default class RoomDecorator {
 
   tick() {
     if(this.room && this.room.visual) {
-      for(let visual of this.visuals)
+      for(let visual of this.visuals) {
         visual(this.room.visual);
+        if(this.room.visual.getSize() >= 512000)
+          break;
+      }
     }
 
     this.strategy.tick();
