@@ -34,7 +34,7 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
       let countBuilt = structuresOfType.length + constructionSitesOfType.length;
       console.log('building', room.roomName, countBuilt, totalAvailable);
 
-      let offset = countBuilt + (countBuilt % 2) - 1 + 10;
+      let offset = countBuilt + (countBuilt % 2) - 1 + 48;
       while(countBuilt < totalAvailable) {
         let currentOffset = offset;
 
