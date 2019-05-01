@@ -14,6 +14,15 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
     if(!room.room || !room.room.controller || !room.room.controller.my)
       return;
 
+    this.buildSpiralStructures();
+
+    room.refresh();
+    room.setStrategy(new StrategyPickingRoomStrategy(room));
+  }
+
+  private buildSpiralStructures() {
+    let room = this.room;
+
     let rawStructures = (room.room.find(FIND_STRUCTURES) as Structure[]) || [];
     let structures = rawStructures.filter(x => x.structureType !== STRUCTURE_ROAD);
 
@@ -68,8 +77,5 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
         }
       }
     }
-
-    room.refresh();
-    room.setStrategy(new StrategyPickingRoomStrategy(room));
   }
 }

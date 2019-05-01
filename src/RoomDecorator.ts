@@ -3,9 +3,11 @@ import GameDecorator from "GameDecorator";
 import RoomsDecorator from "RoomsDecorator";
 import TerrainDecorator from "terrain/TerrainDecorator";
 import ConstructStructuresRoomStrategy from "strategies/room/ConstructStructuresRoomStrategy";
-import RoomCreepsDecorator from "RoomCreepsDecorator";
+import CreepsDecorator from "CreepsDecorator";
 import profile from "profiler";
 import DeferHelper from "helpers/DeferHelper";
+import SourceDecorator from "SourceDecorator";
+import ControllerDecorator from "ControllerDecorator";
 
 export interface RoomStrategy {
   readonly name: string;
@@ -15,15 +17,16 @@ export interface RoomStrategy {
 
 @profile
 export default class RoomDecorator {
-  public sources: Source[];
+  public sources: SourceDecorator[];
   public constructionSites: ConstructionSite[];
   public spawns: SpawnDecorator[];
   public terrain: TerrainDecorator;
   public structures: Structure[];
+  public controller: ControllerDecorator;
 
   public readonly visuals: ((visual: RoomVisual) => RoomVisual)[];
 
-  public readonly creeps: RoomCreepsDecorator;
+  public readonly creeps: CreepsDecorator;
 
   private strategy: RoomStrategy;
 
@@ -56,7 +59,7 @@ export default class RoomDecorator {
     private readonly rooms: RoomsDecorator,
     public readonly roomName: string)
   {
-    this.creeps = new RoomCreepsDecorator(rooms, this);
+    this.creeps = new CreepsDecorator(rooms, this);
     this.constructionSites = [];
     this.visuals = [];
 
@@ -115,7 +118,14 @@ export default class RoomDecorator {
 
   initialize() {
     this.terrain = new TerrainDecorator(this, (this.game.game.map as any).getRoomTerrain(this.roomName));
-    this.sources = this.isClaimed ? this.room.find(FIND_SOURCES) : [];
+    this.controller = new ControllerDecorator(this, this.isClaimed ? this.room.controller : null);
+    this.sources = this.isClaimed ?
+      this.room
+        .find(FIND_SOURCES)
+        .map((x: Source) => new SourceDecorator(
+          this,
+          x
+        )) : [];
 
     this.creeps.initialize()
 

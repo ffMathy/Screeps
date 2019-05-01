@@ -6,12 +6,12 @@ import { CreepStrategy } from 'strategies/Strategy';
 import HarvestCreepStrategy from 'strategies/creep/HarvestCreepStrategy';
 import UpgradeCreepStrategy from 'strategies/creep/UpgradeCreepStrategy';
 import TransferCreepStrategy from 'strategies/creep/TransferCreepStrategy';
-import BuildingCreepStrategy from 'strategies/creep/BuildingCreepStrategy';
 import WalkToCreepStrategy from 'strategies/creep/WalkToCreepStrategy';
 import profile from 'profiler';
+import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
 
 @profile
-export default class RoomCreepsDecorator {
+export default class CreepsDecorator {
   public all: CreepDecorator[];
   public active: CreepDecorator[];
   public idle: CreepDecorator[];
@@ -79,36 +79,24 @@ export default class RoomCreepsDecorator {
     }
   }
 
-  private reserveSpot(creep: CreepDecorator, position: RoomPosition, radius: number, minimumRadius: number, avoidRoads: boolean = false) {
-    let sourceTile = creep.room.terrain.getTileAt(position);
-
-    let parkingLot = sourceTile.getSurroundingEnvironment(radius, minimumRadius, avoidRoads);
-    if (parkingLot.availableTiles.length === 0)
-      return null;
-
-    return parkingLot;
-  }
-
   private walkToIfPossible(
     creep: CreepDecorator,
-    position: RoomPosition,
-    radius: number,
-    minimumRadius: number,
+    reservation: SurroundingTileEnvironment,
     successorStrategy: CreepStrategy)
   {
-    let reservation = this.reserveSpot(creep, position, radius, minimumRadius, !successorStrategy);
-    if (!reservation)
-      return null;
-
     if(!reservation.entrypoint)
       throw new Error('Entrypoint for reservation is not present.');
 
+    let tilesToAvoid = reservation.minimumRadius > 1 ? [] : reservation.tilesGroupedByProximity[reservation.minimumRadius];
+    let availableTile = reservation.availableTiles[0];
+    if(!availableTile)
+      return null;
+
     let viaPosition = reservation.entrypoint.position;
+    let position = reservation.center.position;
     if(viaPosition.x === position.x && viaPosition.y === position.y)
       viaPosition = null;
 
-    let tilesToAvoid = reservation.tilesGroupedByProximity[minimumRadius];
-    let availableTile = reservation.availableTiles[0];
     Arrays.remove(tilesToAvoid, availableTile);
 
     return new WalkToCreepStrategy(
@@ -124,49 +112,42 @@ export default class RoomCreepsDecorator {
       .sources
       .map(source => this.walkToIfPossible(
         creep,
-        source.pos,
-        1,
-        1,
+        source.harvestEnvironment,
         new HarvestCreepStrategy(
           creep,
-          source.id)
+          source.source.id)
       ));
   }
 
   private getNeededTransferStrategies(creep: CreepDecorator) {
-    return this.room
-      .getTransferrableStructures()
+    return this.room.spawns
       .map(availableTransferSite => this.walkToIfPossible(
         creep,
-        availableTransferSite.pos,
-        1,
-        1,
+        availableTransferSite.transferEnvironment,
         new TransferCreepStrategy(
           creep,
           availableTransferSite.id)
       ));
   }
 
-  private getNeededBuildStrategies(creep: CreepDecorator) {
-    return this.room
-      .constructionSites
-      .map(availableConstructionSite => this.walkToIfPossible(
-        creep,
-        availableConstructionSite.pos,
-        availableConstructionSite.structureType === STRUCTURE_ROAD ? 1 : 3,
-        1,
-        new BuildingCreepStrategy(
-          creep,
-          availableConstructionSite.id)
-      ));
-  }
+  // private getNeededBuildStrategies(creep: CreepDecorator) {
+  //   return this.room
+  //     .constructionSites
+  //     .map(availableConstructionSite => this.walkToIfPossible(
+  //       creep,
+  //       availableConstructionSite.pos,
+  //       availableConstructionSite.structureType === STRUCTURE_ROAD ? 1 : 3,
+  //       1,
+  //       new BuildingCreepStrategy(
+  //         creep,
+  //         availableConstructionSite.id)
+  //     ));
+  // }
 
   private getNeededUpgradeStrategy(creep: CreepDecorator) {
     return this.walkToIfPossible(
       creep,
-      creep.room.room.controller.pos,
-      3,
-      1,
+      creep.room.controller.upgradeEnvironment,
       new UpgradeCreepStrategy(creep)
     );
   }
@@ -186,7 +167,7 @@ export default class RoomCreepsDecorator {
       if (creep.room.room && creep.room.room.controller)
         possibilities.push(this.getNeededUpgradeStrategy(creep));
 
-      possibilities.push(...this.getNeededBuildStrategies(creep));
+      // possibilities.push(...this.getNeededBuildStrategies(creep));
     }
 
     let offset = this._strategyOffset++ % possibilities.length;
@@ -206,20 +187,20 @@ export default class RoomCreepsDecorator {
 
         nextIdleCreep.strategy = neededStrategy;
       } else if(!nextIdleCreep.strategy) {
-        let minimumRadius = 3;
-        let maximumRadius = 4;
+        // let minimumRadius = 3;
+        // let maximumRadius = 4;
 
-        let targetX = 25;
-        let targetY = 25;
+        // let targetX = 25;
+        // let targetY = 25;
 
-        if(Math.abs(nextIdleCreep.creep.pos.x - targetX) > maximumRadius && Math.abs(nextIdleCreep.creep.pos.y - targetY) > maximumRadius) {
-          nextIdleCreep.strategy = this.walkToIfPossible(
-            nextIdleCreep,
-            this.room.room.getPositionAt(25, 25),
-            maximumRadius,
-            minimumRadius,
-            null);
-        }
+        // if(Math.abs(nextIdleCreep.creep.pos.x - targetX) > maximumRadius && Math.abs(nextIdleCreep.creep.pos.y - targetY) > maximumRadius) {
+        //   nextIdleCreep.strategy = this.walkToIfPossible(
+        //     nextIdleCreep,
+        //     this.room.room.getPositionAt(25, 25),
+        //     maximumRadius,
+        //     minimumRadius,
+        //     null);
+        // }
       }
     }
 

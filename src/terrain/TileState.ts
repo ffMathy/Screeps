@@ -112,7 +112,7 @@ export default class TileState {
 
   getPathTo(targetPosition: RoomPosition, avoid: RoomPosition[] = []) {
     let positionIndex = Coordinates.roomPositionToNumber(targetPosition.x, targetPosition.y);
-    let key = positionIndex + "-" + avoid.length;
+    let key = positionIndex + "-" + avoid.map(x => x.x + '_' + x.y).join('-');
     let path = this.pathsTo[key];
 
     if (typeof path !== "undefined")

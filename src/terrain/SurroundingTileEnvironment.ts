@@ -19,9 +19,9 @@ export default class SurroundingTileEnvironment {
   private static lastHighwayTick: number;
 
   constructor(
-    private radius: number,
-    minimumRadius: number,
-    private readonly origin: TileState,
+    public readonly radius: number,
+    public readonly minimumRadius: number,
+    public readonly center: TileState,
     tiles: TileState[],
     avoidRoads: boolean = false)
   {
@@ -37,25 +37,22 @@ export default class SurroundingTileEnvironment {
         return true;
       });
 
-    this.entrypoint = this.getEntryPoint(origin, walkableTiles);
+    this.entrypoint = this.getEntryPoint(center, walkableTiles);
 
     if(!SurroundingTileEnvironment.lastHighwayTick)
       SurroundingTileEnvironment.lastHighwayTick = Game.time;
 
-    this.makeHighways();
-    origin.terrain.onChange.addListener(this.makeHighways.bind(this), true);
-
-    Arrays.add(origin.terrain.room.visuals, (visual: RoomVisual) => {
-      if (this.occupiedTiles.length === 0 || (origin.constructionSite && origin.constructionSite.structureType === STRUCTURE_ROAD))
+    Arrays.add(center.terrain.room.visuals, (visual: RoomVisual) => {
+      if (this.occupiedTiles.length === 0 || (center.constructionSite && center.constructionSite.structureType === STRUCTURE_ROAD))
         return;
 
-      return visual.text(this.occupiedTiles.length + '/' + this.tilesOrderedByProximity.length, origin.position.x + 1, origin.position.y + 1);
+      return visual.text(this.occupiedTiles.length + '/' + this.tilesOrderedByProximity.length, center.position.x + 1, center.position.y + 1);
     });
 
     this.tilesGroupedByProximity = [];
     this.tilesOrderedByProximity = walkableTiles
       .map(t => {
-        let path = origin.getPathTo(t.position);
+        let path = center.getPathTo(t.position);
         return {
           distanceToOrigin: path !== null ? path.distance : 0,
           tile: t
@@ -117,7 +114,7 @@ export default class SurroundingTileEnvironment {
     });
 
     let newCenter = getNewCenter();
-    let minimumRadius = 3;
+    let minimumRadius = 2;
     let multiplierIncrement = 0.2;
 
     while(Math.abs(newCenter.x - origin.position.x) <= minimumRadius && Math.abs(newCenter.y - origin.position.y) <= minimumRadius) {
@@ -162,39 +159,39 @@ export default class SurroundingTileEnvironment {
     return tile;
   }
 
-  private makeHighways() {
-    if(this.origin.terrain.room.constructionSites.length > 0 || this.radius <= 1)
-      return;
+  // private makeHighways() {
+  //   if(this.center.terrain.room.constructionSites.length > 0 || this.radius <= 1)
+  //     return;
 
-    console.log('make highways');
+  //   console.log('make highways');
 
-    for(let source of this.origin.terrain.room.sources) {
-      if(this.makeHighwayTo(source.pos))
-        return;
-    }
+  //   for(let source of this.center.terrain.room.sources) {
+  //     if(this.makeHighwayTo(source.source.pos))
+  //       return;
+  //   }
 
-    for(let spawn of this.origin.terrain.room.spawns) {
-      if(this.makeHighwayTo(spawn.spawn.pos))
-        return;
-    }
+  //   for(let spawn of this.center.terrain.room.spawns) {
+  //     if(this.makeHighwayTo(spawn.spawn.pos))
+  //       return;
+  //   }
 
-    this.makeHighwayTo(this.origin.terrain.room.room.controller.pos);
-  }
+  //   this.makeHighwayTo(this.center.terrain.room.room.controller.pos);
+  // }
 
-  private makeHighwayTo(position: RoomPosition) {
-    if(SurroundingTileEnvironment.lastHighwayTick && SurroundingTileEnvironment.lastHighwayTick >= Game.time - 1)
-      return true;
+  // private makeHighwayTo(position: RoomPosition) {
+  //   if(SurroundingTileEnvironment.lastHighwayTick && SurroundingTileEnvironment.lastHighwayTick >= Game.time - 1)
+  //     return true;
 
-    SurroundingTileEnvironment.lastHighwayTick = Game.time;
+  //   SurroundingTileEnvironment.lastHighwayTick = Game.time;
 
-    console.log('make highway', JSON.stringify(this.origin.position), JSON.stringify(position));
+  //   console.log('make highway', JSON.stringify(this.center.position), JSON.stringify(position));
 
-    let originPosition = this.origin.position;
-    let positions = [originPosition, ...this.origin.terrain.room
-      .findWalkablePath(originPosition, position)
-      .map(step => this.origin.terrain.room.room.getPositionAt(step.x, step.y))];
-    return this.origin.terrain.room.createConstructionSites(positions, STRUCTURE_ROAD) > 0;
-  }
+  //   let originPosition = this.center.position;
+  //   let positions = [originPosition, ...this.center.terrain.room
+  //     .findWalkablePath(originPosition, position)
+  //     .map(step => this.center.terrain.room.room.getPositionAt(step.x, step.y))];
+  //   return this.center.terrain.room.createConstructionSites(positions, STRUCTURE_ROAD) > 0;
+  // }
 
   private onTileCreepChanged(tileDecorator: TileStateEnvironmentDecorator, tile: TileState, _creep: CreepDecorator) {
     if (tile.futureCreep) {

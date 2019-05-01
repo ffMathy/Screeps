@@ -2,10 +2,15 @@ import CreepDecorator from 'CreepDecorator';
 import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
 import profile from 'profiler';
+import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
 
 @profile
 export default class SpawnDecorator {
     private readonly spawnName: string;
+
+    readonly transferEnvironment: SurroundingTileEnvironment;
+
+    readonly id: string;
 
     private static nameOffset = 0;
 
@@ -15,13 +20,19 @@ export default class SpawnDecorator {
         public readonly spawn: Spawn)
     {
         if(this.spawn === null) {
+            this.id = null;
+
             for(let key in Game.spawns) {
                 this.spawnName = key;
                 break;
             }
         } else {
+            this.id = this.spawn.id;
             this.spawnName = this.spawn.name;
         }
+
+        let tile = room.terrain.getTileAt(spawn.pos);
+        this.transferEnvironment = tile.getSurroundingEnvironment(1, 1);
     }
 
     getTimeUntilSpawn() {
