@@ -39,18 +39,19 @@ if(doProfiling) {
 
 console.log('loaded');
 
-let shouldSkip = false;
+let lastError = null;
 let isProfiling = false;
 let startTick = Game.time;
 
 export const loop = function() {
-    if(shouldSkip)
+    if(lastError) {
         return;
+    }
 
     try {
         GameDecorator.instance.tick();
     } catch(ex) {
-        shouldSkip = true;
+        lastError = ex;
         throw ex;
     }
 
