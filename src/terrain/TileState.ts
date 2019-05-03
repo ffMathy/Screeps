@@ -82,7 +82,7 @@ export default class TileState {
   }
 
   getSurroundingEnvironment(radius: number, minimumRadius: number, avoidRoads: boolean = false) {
-    let environmentKey = radius + '-' + minimumRadius;
+    let environmentKey = radius + '-' + minimumRadius + '-' + avoidRoads;
     if (typeof this.surroundingEnvironmentsByRadius[environmentKey] !== "undefined")
       return this.surroundingEnvironmentsByRadius[environmentKey];
 
@@ -110,9 +110,9 @@ export default class TileState {
     return this.terrain.getTileAt(this.position.x + position.x, this.position.y + position.y);
   }
 
-  getPathTo(targetPosition: RoomPosition, avoid: RoomPosition[] = []) {
+  getPathTo(targetPosition: RoomPosition) {
     let positionIndex = Coordinates.roomPositionToNumber(targetPosition.x, targetPosition.y);
-    let key = positionIndex + "-" + avoid.map(x => x.x + '_' + x.y).join('-');
+    let key = positionIndex;
     let path = this.pathsTo[key];
 
     if (typeof path !== "undefined")
@@ -123,9 +123,7 @@ export default class TileState {
     let distance: number;
     let nextSteps: Array<PathStep>;
 
-    let steps = this.terrain.room.findWalkablePath(this.position, targetPosition, {
-      avoid
-    });
+    let steps = this.terrain.room.findWalkablePath(this.position, targetPosition);
 
     if (steps.length === 0) {
       nextDirection = null;

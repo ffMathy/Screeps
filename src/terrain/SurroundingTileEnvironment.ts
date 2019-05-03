@@ -4,7 +4,8 @@ import TileState from "./TileState";
 
 export interface TileStateEnvironmentDecorator {
   tile: TileState;
-  distanceToOrigin: number;
+  distance: number;
+  radius: number;
 }
 
 export default class SurroundingTileEnvironment {
@@ -42,36 +43,53 @@ export default class SurroundingTileEnvironment {
     if(!SurroundingTileEnvironment.lastHighwayTick)
       SurroundingTileEnvironment.lastHighwayTick = Game.time;
 
-    Arrays.add(center.terrain.room.visuals, (visual: RoomVisual) => {
-      if (this.occupiedTiles.length === 0 || (center.constructionSite && center.constructionSite.structureType === STRUCTURE_ROAD))
-        return;
-
-      return visual.text(this.occupiedTiles.length + '/' + this.tilesOrderedByProximity.length, center.position.x + 1, center.position.y + 1);
-    });
-
     this.tilesGroupedByProximity = [];
     this.tilesOrderedByProximity = walkableTiles
       .map(t => {
         let path = center.getPathTo(t.position);
+        let radius = Math.max(
+          Math.abs(t.position.x - center.position.x),
+          Math.abs(t.position.y - center.position.y)
+        );
+
         return {
-          distanceToOrigin: path !== null ? path.distance : 0,
+          distance: path !== null ? path.distance : 0,
+          radius: radius,
           tile: t
         } as TileStateEnvironmentDecorator;
       })
-      .sort((a, b) => a.distanceToOrigin - b.distanceToOrigin)
-      .filter(t => t.distanceToOrigin >= (minimumRadius || 0))
-      .filter(t => t.distanceToOrigin <= 1 || (t.tile.position.x % 2 === 1 && t.tile.position.y % 2 === 0));
+      .sort((a, b) => a.distance - b.distance)
+      .filter(t => t.radius >= (minimumRadius || 0))
+      .filter(t => t.radius <= 1 || (t.radius > 2 && (t.tile.position.x % 2 !== t.tile.position.y % 2)))
+      .filter(t => this.entrypoint.terrain.reserveSpot(t.tile.position.x, t.tile.position.y));
 
     for (let tileDecorator of this.tilesOrderedByProximity) {
-      if(!this.tilesGroupedByProximity[tileDecorator.distanceToOrigin])
-        this.tilesGroupedByProximity[tileDecorator.distanceToOrigin] = [];
+      if(!this.tilesGroupedByProximity[tileDecorator.radius])
+        this.tilesGroupedByProximity[tileDecorator.radius] = [];
 
-      Arrays.add(this.tilesGroupedByProximity[tileDecorator.distanceToOrigin], tileDecorator);
+      Arrays.add(this.tilesGroupedByProximity[tileDecorator.radius], tileDecorator);
 
       tileDecorator.tile.onCreepChanged.addListener(this.onTileCreepChanged.bind(this, tileDecorator), false);
       tileDecorator.tile.onFutureCreepChanged.addListener(this.onTileCreepChanged.bind(this, tileDecorator), false);
 
       this.onTileCreepChanged(tileDecorator, tileDecorator.tile, tileDecorator.tile.creep);
+
+      let position = tileDecorator.tile.position;
+      Arrays.add(center.terrain.room.visuals, (visual: RoomVisual) => {
+        let color = this.availableTiles.indexOf(tileDecorator) > -1 ?
+          '#00ff00' :
+          '#ff0000';
+        visual.circle(tileDecorator.tile.position, {
+          radius: 0.1,
+          opacity: 0.5,
+          fill: color
+        }).line(position.x, position.y, center.position.x, center.position.y, {
+          opacity: 0.75,
+          color: color,
+          lineStyle: 'dashed',
+          width: 0.01
+        });
+      });
     }
   }
 
@@ -141,21 +159,6 @@ export default class SurroundingTileEnvironment {
     if(!tile)
       return origin;
 
-    if(tile.position.x !== origin.position.x || tile.position.y !== origin.position.y) {
-      tile.terrain.room.visuals.push(v => {
-        let color = this.availableTiles.length > 0 ? '#00ff00' : '#ff0000';
-        return v.circle(tile.position, {
-            radius: 1,
-            fill: null,
-            stroke: color,
-            lineStyle: "dashed"
-          }).line(tile.position, origin.position, {
-            color: color,
-            lineStyle: "dotted"
-          });
-        });
-      }
-
     return tile;
   }
 
@@ -199,7 +202,7 @@ export default class SurroundingTileEnvironment {
       Arrays.remove(this.availableTiles, tileDecorator);
     }
     else if (!tile.creep) {
-      Arrays.insertAscending(this.availableTiles, tileDecorator, t => t.distanceToOrigin);
+      Arrays.insertAscending(this.availableTiles, tileDecorator, t => t.distance);
       Arrays.remove(this.occupiedTiles, tileDecorator);
     }
   }

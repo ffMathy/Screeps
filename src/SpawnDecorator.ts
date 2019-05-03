@@ -3,22 +3,25 @@ import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
 import profile from 'profiler';
 import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
+import Arrays from 'helpers/Arrays';
 
 @profile
 export default class SpawnDecorator {
     private readonly spawnName: string;
 
-    readonly transferEnvironment: SurroundingTileEnvironment;
+    private readonly spawnQueue: CreepDecorator[];
+
+    transferEnvironment: SurroundingTileEnvironment;
 
     readonly id: string;
-
-    private static nameOffset = 0;
 
     constructor(
         private readonly game: GameDecorator,
         public readonly room: RoomDecorator,
         public readonly spawn: Spawn)
     {
+        this.spawnQueue = [];
+
         if(this.spawn === null) {
             this.id = null;
 
@@ -30,8 +33,10 @@ export default class SpawnDecorator {
             this.id = this.spawn.id;
             this.spawnName = this.spawn.name;
         }
+    }
 
-        let tile = room.terrain.getTileAt(spawn.pos);
+    initialize() {
+        let tile = this.room.terrain.getTileAt(this.spawn.pos);
         this.transferEnvironment = tile.getSurroundingEnvironment(1, 1);
     }
 
@@ -62,7 +67,7 @@ export default class SpawnDecorator {
         if(this.getSpawnDetails())
             return;
 
-        let creepName = 'creep-' + (Game.time + SpawnDecorator.nameOffset++);
+        let creepName = 'creep-' + Game.time;
         let spawnResult = Game.spawns[this.spawnName].spawnCreep(
             qualities,
             creepName,
@@ -77,7 +82,8 @@ export default class SpawnDecorator {
                 throw new Error('Could not fetch spawned creep.');
 
             let creepDecorator = new CreepDecorator(this.game, creepSpawned);
-            this.room.creeps.add(creepDecorator);
+            Arrays.add(this.spawnQueue, creepDecorator);
+
             this.room.sayAt(Game.spawns[this.spawnName], '🛠️');
         } else if(spawnResult === ERR_NOT_ENOUGH_ENERGY) {
             this.room.sayAt(Game.spawns[this.spawnName], '⚡');
@@ -101,6 +107,15 @@ export default class SpawnDecorator {
     }
 
     tick() {
+        if(!this.getSpawnDetails()) {
+            while(this.spawnQueue.length > 0) {
+                let creepDecorator = this.spawnQueue.splice(0, 1)[0];
+                this.room.creeps.add(creepDecorator);
+
+                creepDecorator.tick();
+            }
+        }
+
         this.maintainPopulation();
     }
 };

@@ -3,6 +3,7 @@ import profile from "profiler";
 import TileState from "terrain/TileState";
 import EventHandler from "helpers/EventHandler";
 import Coordinates from "helpers/Coordinates";
+import Arrays from "helpers/Arrays";
 
 declare interface Terrain {
   get(x: number, y: number): number
@@ -12,6 +13,8 @@ declare interface Terrain {
 export default class TerrainDecorator {
   private readonly tiles: Array<TileState>;
 
+  readonly spotTiles: Array<TileState>;
+
   public readonly onChange: EventHandler<TerrainDecorator>;
 
   constructor(
@@ -19,7 +22,12 @@ export default class TerrainDecorator {
     public readonly terrain: Terrain
   ) {
     this.tiles = new Array(50 * 50);
+    this.spotTiles = [];
     this.onChange = new EventHandler(this);
+  }
+
+  reserveSpot(x: number, y: number) {
+    return Arrays.add(this.spotTiles, this.getTileAt(x, y));
   }
 
   getTileAt(position: RoomPosition): TileState

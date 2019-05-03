@@ -46,7 +46,11 @@ export default class RoomsDecorator {
   }
 
   tick() {
-    for(let room of this.all)
+    for(let room of this.all) {
+      if(!room.room)
+        continue;
+
       room.tick();
+    }
   }
 };

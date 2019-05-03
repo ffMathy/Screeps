@@ -4,13 +4,16 @@ import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
 
 @profile
 export default class SourceDecorator {
-    readonly harvestEnvironment: SurroundingTileEnvironment;
+    harvestEnvironment: SurroundingTileEnvironment;
 
     constructor(
         public readonly room: RoomDecorator,
         public readonly source: Source)
     {
-        let tile = room.terrain.getTileAt(source.pos);
+    }
+
+    initialize() {
+        let tile = this.room.terrain.getTileAt(this.source.pos);
         this.harvestEnvironment = tile.getSurroundingEnvironment(1, 1);
     }
 };

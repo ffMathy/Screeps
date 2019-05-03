@@ -74,20 +74,20 @@ export default class RoomDecorator {
       opts = {};
 
     opts.ignoreCreeps = true;
-    opts.ignoreDestructibleStructures = false;
-    opts.ignoreRoads = false;
 
-    if(opts.avoid) {
-      let avoid = opts.avoid;
-      delete opts.avoid;
+    let spotTiles = this.terrain
+      .spotTiles
+      .map(x => x.position);
 
-      opts.costCallback = (_roomName, costMatrix) => {
-        for(let avoidPosition of avoid)
-          costMatrix.set(avoidPosition.x, avoidPosition.y, 255);
+    opts.costCallback = (_roomName, costMatrix) => {
+      for(let structure of this.structures)
+        costMatrix.set(structure.pos.x, structure.pos.y, 255);
 
-        return costMatrix;
-      }
-    }
+      for(let avoidPosition of spotTiles)
+        costMatrix.set(avoidPosition.x, avoidPosition.y, 100);
+
+      return costMatrix;
+    };
 
     let path = this.room.findPath(fromPos, toPos, opts);
     if(path.length > 0) {
@@ -127,9 +127,15 @@ export default class RoomDecorator {
           x
         )) : [];
 
-    this.creeps.initialize()
-
     this.refreshNow();
+
+    for(let source of this.sources)
+      source.initialize();
+
+    this.controller.initialize();
+
+    this.creeps.initialize();
+
     this.strategy = new ConstructStructuresRoomStrategy(this);
   }
 
@@ -165,7 +171,9 @@ export default class RoomDecorator {
         .find(FIND_MY_SPAWNS)
         .map((x: Spawn) => new SpawnDecorator(this.game, this, x));
 
-      console.log('room refresh');
+      for(let spawn of this.spawns)
+        spawn.initialize();
+
       this.terrain.onChange.fire();
     }
   }

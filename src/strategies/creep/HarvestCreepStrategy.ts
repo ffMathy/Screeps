@@ -22,7 +22,9 @@ export default class HarvestCreepStrategy implements CreepStrategy {
     let harvestResult = this.creep.creep.harvest(
       Game.getObjectById(this.reservedSourceId)
     );
-    if(harvestResult !== OK) {
+    if(harvestResult === ERR_BUSY) {
+      //creep is still being spawned.
+    } else if(harvestResult !== OK) {
       throw new Error('Harvest error: ' + harvestResult);
     }
   }
