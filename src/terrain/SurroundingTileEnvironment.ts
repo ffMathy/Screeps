@@ -74,7 +74,7 @@ export default class SurroundingTileEnvironment {
       .filter(t => this.minimumRadius === 1 || t.radius > (this.minimumRadius || -1))
       .filter(t => t.radius <= 1 || (t.radius > 2 && (t.tile.position.x % 2 !== t.tile.position.y % 2)))
       .filter(() => count++ < (this.amount === -1 ? 1337 : this.amount))
-      .filter(t => this.entrypoint.terrain.reserveSpot(t.tile.position.x, t.tile.position.y, this.minimumRadius === 1 && this.radius === 1));
+      .filter(t => this.entrypoint.terrain.reserveSpot(t.tile.position.x, t.tile.position.y, false));
 
     for (let tileDecorator of this.tilesOrderedByProximity) {
       if(!this.tilesGroupedByProximity[tileDecorator.radius])
