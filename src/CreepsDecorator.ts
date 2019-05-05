@@ -36,6 +36,8 @@ export default class CreepsDecorator {
   }
 
   initialize() {
+    console.log('creeps-init');
+
     if(this.room.controller.controller && this.room.controller.controller.my) {
       Arrays.add(this.room.visuals, (visual: RoomVisual) => visual
         .text(
@@ -92,17 +94,22 @@ export default class CreepsDecorator {
       throw new Error('No environment found.');
     }
 
-    let availableTile = reservation.availableTiles[0];
-    if(!availableTile)
-      return null;
+    try {
+      let availableTile = reservation.availableTiles[0];
+      if(!availableTile)
+        return null;
 
-    let viaPosition = null;
+      let viaPosition = null;
 
-    return new WalkToCreepStrategy(
-      creep,
-      viaPosition,
-      availableTile.tile.position,
-      successorStrategy);
+      return new WalkToCreepStrategy(
+        creep,
+        viaPosition,
+        availableTile.tile.position,
+        successorStrategy);
+    } catch(ex) {
+      console.log(creep.creep.name, reservation.center.position);
+      throw ex;
+    }
   }
 
   private getNeededHarvestStrategies(creep: CreepDecorator) {
@@ -120,7 +127,8 @@ export default class CreepsDecorator {
   }
 
   private getNeededTransferStrategies(creep: CreepDecorator) {
-    return this.room.spawns
+    return [...this.room.spawns, ...this.room.extensions]
+      .filter(x => x.energy < x.energyCapacity)
       .map(availableTransferSite => {
         return this.walkToIfPossible(
           creep,
@@ -135,13 +143,16 @@ export default class CreepsDecorator {
   private getNeededBuildStrategies(creep: CreepDecorator) {
     return this.room
       .constructionSites
-      .map(availableConstructionSite => this.walkToIfPossible(
-        creep,
-        this.room.terrain.getTileAt(availableConstructionSite.pos).getSurroundingEnvironment(3, 1, true),
-        new BuildingCreepStrategy(
+      .map(availableConstructionSite => {
+        let amount = availableConstructionSite.structureType === STRUCTURE_ROAD ? 1 : -1;
+        return this.walkToIfPossible(
           creep,
-          availableConstructionSite.id)
-      ));
+          this.room.terrain.getTileAt(availableConstructionSite.pos).getSurroundingEnvironment(3, 1, amount, true),
+          new BuildingCreepStrategy(
+            creep,
+            availableConstructionSite.id));
+      })
+      .filter(x => !!x);
   }
 
   private getNeededUpgradeStrategy(creep: CreepDecorator) {
@@ -168,7 +179,7 @@ export default class CreepsDecorator {
         possibilities.push(...this.getNeededBuildStrategies(creep));
 
       if (this.idle.length > 2 && creep.room.room && creep.room.room.controller)
-        possibilities.push(this.getNeededUpgradeStrategy(creep));
+        Arrays.add(possibilities, this.getNeededUpgradeStrategy(creep));
     }
 
     let offset = this._strategyOffset++ % possibilities.length;
@@ -198,7 +209,7 @@ export default class CreepsDecorator {
         if(isOutside) {
           nextIdleCreep.strategy = this.walkToIfPossible(
             nextIdleCreep,
-            this.room.terrain.getTileAt(targetX, targetY).getSurroundingEnvironment(maximumRadius, minimumRadius, true),
+            this.room.terrain.getTileAt(targetX, targetY).getSurroundingEnvironment(maximumRadius, minimumRadius, -1, true),
             null);
         }
       }

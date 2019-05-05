@@ -2,7 +2,6 @@ import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 import profile from "profiler";
 import Coordinates, { Direction } from "helpers/Coordinates";
-import GameDecorator from "GameDecorator";
 
 @profile
 export default class WalkToCreepStrategy implements CreepStrategy {
@@ -25,18 +24,21 @@ export default class WalkToCreepStrategy implements CreepStrategy {
   }
 
   tick() {
-    if(GameDecorator.instance.cpuUsedPercentage > 0.5)
-      return;
-
     if(!this.creep.futureTile)
       this.creep.futureTile = this.creep.room.terrain.getTileAt(this.targetPosition);
 
-    let path = this.creep.tile.getPathTo(this.via || this.targetPosition);
+    //if spawning, the creep will be on top of a spawn temporarily.
+    if(this.creep.tile.structure)
+      return;
 
-    let isFinished = this.via ?
-      !path || path.nextTiles.length <= 1 :
-      path.nextTile === null;
+    let destination = this.via || this.targetPosition;
+    let path = this.creep.tile.getPathTo(destination);
+    if(path === null) {
+      console.log('no-path', this.creep.creep.name, this.creep.creep.pos, destination);
+      return null;
+    }
 
+    let isFinished = path.nextTile === null;
     if(isFinished) {
       if(this.via) {
         this.via = null;

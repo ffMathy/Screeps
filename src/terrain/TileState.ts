@@ -43,6 +43,8 @@ export default class TileState {
 
   private readonly modifier: number;
 
+  private isInitialized;
+
   readonly onCreepChanged: EventHandler<TileState, [CreepDecorator]>;
   readonly onFutureCreepChanged: EventHandler<TileState, [CreepDecorator]>;
   readonly onConstructionSiteChanged: EventHandler<TileState, [ConstructionSite]>;
@@ -132,12 +134,15 @@ export default class TileState {
     if(this.pathsTo) {
       for(let key in this.pathsTo) {
         let path = this.pathsTo[key];
-        if(path.origin !== this)
+        delete this.pathsTo[key];
+
+        if(path === null || path.origin !== this)
           continue;
 
-        delete this.pathsTo[key];
-        for(let step of path.nextTiles) {
-          delete step.pathsTo[key];
+        if(path.nextTiles) {
+          for(let step of path.nextTiles) {
+            delete step.pathsTo[key];
+          }
         }
       }
     }
@@ -146,13 +151,24 @@ export default class TileState {
   }
 
   private resetEnvironments() {
-    for (let radius in this.surroundingEnvironmentsByRadius)
-      this.surroundingEnvironmentsByRadius[radius].dispose();
+    if(this.surroundingEnvironmentsByRadius) {
+      for (let radius in this.surroundingEnvironmentsByRadius)
+        this.surroundingEnvironmentsByRadius[radius].dispose();
+    }
 
     this.surroundingEnvironmentsByRadius = Object.create(null);
   }
 
-  getSurroundingEnvironment(radius: number, minimumRadius: number, avoidRoads: boolean = false) {
+  initialize() {
+    if(this.isInitialized)
+      throw new Error('Already initialized.');
+
+    this.isInitialized = true;
+    for(let key in this.surroundingEnvironmentsByRadius)
+      this.surroundingEnvironmentsByRadius[key].initialize();
+  }
+
+  getSurroundingEnvironment(radius: number, minimumRadius: number, amount: number = -1, avoidRoads: boolean = false) {
     let environmentKey = radius + '-' + minimumRadius + '-' + avoidRoads;
     if (typeof this.surroundingEnvironmentsByRadius[environmentKey] !== "undefined")
       return this.surroundingEnvironmentsByRadius[environmentKey];
@@ -172,7 +188,19 @@ export default class TileState {
       .filter(x => x.terrain !== "wall")
       .map(t => this.terrain.getTileAt(t.x, t.y));
 
-    this.surroundingEnvironmentsByRadius[environmentKey] = new SurroundingTileEnvironment(radius, minimumRadius, this, tiles, avoidRoads);
+    console.log('new-env', this.position, radius);
+
+    let environment = new SurroundingTileEnvironment(
+      radius,
+      minimumRadius,
+      this,
+      tiles,
+      amount,
+      avoidRoads);
+    if(this.isInitialized)
+      environment.initialize();
+
+    this.surroundingEnvironmentsByRadius[environmentKey] = environment;
     return this.surroundingEnvironmentsByRadius[environmentKey];
   }
 
@@ -184,23 +212,24 @@ export default class TileState {
   getPathTo(targetPosition: RoomPosition) {
     let positionIndex = Coordinates.roomPositionToNumber(targetPosition.x, targetPosition.y);
     let key = positionIndex;
-    let path = this.pathsTo[key];
+    let cachedPath = this.pathsTo[key];
 
-    if (typeof path !== "undefined")
-      return path;
+    if (typeof cachedPath !== "undefined")
+      return cachedPath;
 
-    let nextStep: TileState;
+    let path = this.terrain.room.findWalkablePath(this.position, targetPosition);
+    if(path.incomplete) {
+      this.pathsTo[key] = null;
+      return null;
+    }
+
     let nextTiles: Array<TileState>;
 
-    let steps = this.terrain.room.findWalkablePath(this.position, targetPosition);
+    let steps = path.path;
     if (steps.length === 0) {
-      nextStep = null;
       nextTiles = [];
     } else {
       nextTiles = steps.map(step => this.terrain.getTileAt(step.x, step.y));
-
-      let firstStep = steps[0];
-      nextStep = this.terrain.getTileAt(firstStep.x, firstStep.y);
     }
 
     let target = this.terrain.getTileAt(targetPosition);
@@ -214,7 +243,7 @@ export default class TileState {
       return path;
     };
 
-    this.pathsTo[key] = !nextStep ? null : getPathObject(this);
+    this.pathsTo[key] = getPathObject(this);
 
     while(nextTiles[0]) {
       let step = nextTiles[0];

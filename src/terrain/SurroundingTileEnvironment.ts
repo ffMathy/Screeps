@@ -8,51 +8,59 @@ export interface TileStateEnvironmentDecorator {
 }
 
 export default class SurroundingTileEnvironment {
-  readonly tilesOrderedByProximity: TileStateEnvironmentDecorator[];
-  readonly tilesGroupedByProximity: {[proximity: number]: TileStateEnvironmentDecorator[]};
+  tilesOrderedByProximity: TileStateEnvironmentDecorator[];
+  tilesGroupedByProximity: {[proximity: number]: TileStateEnvironmentDecorator[]};
 
-  readonly availableTiles: TileStateEnvironmentDecorator[];
-  readonly occupiedTiles: TileStateEnvironmentDecorator[];
+  availableTiles: TileStateEnvironmentDecorator[];
+  occupiedTiles: TileStateEnvironmentDecorator[];
 
-  readonly entrypoint: TileState;
+  entrypoint: TileState;
 
   private readonly visuals: ((visual: RoomVisual) => RoomVisual)[];
 
-  private static lastHighwayTick: number;
+  private walkableTiles: TileState[];
 
   constructor(
     public readonly radius: number,
     public readonly minimumRadius: number,
     public readonly center: TileState,
-    tiles: TileState[],
-    avoidRoads: boolean = false)
+    private readonly tiles: TileState[],
+    private readonly amount: number,
+    private readonly avoidRoads: boolean)
   {
     this.visuals = [];
+  }
+
+  initialize() {
+    console.log('init-env', this.center.position, this.radius);
+
+    this.tilesGroupedByProximity = [];
+    this.tilesOrderedByProximity = [];
 
     this.availableTiles = [];
     this.occupiedTiles = [];
 
-    let walkableTiles = tiles
+    this.walkableTiles = this.tiles
       .filter(x => x.isWalkable)
       .filter(x => {
-        if(avoidRoads)
+        if(this.avoidRoads)
           return !x.road;
 
         return true;
       });
 
-    this.entrypoint = this.getEntryPoint(center, walkableTiles);
+    this.entrypoint = this.getEntryPoint(this.center);
 
-    if(!SurroundingTileEnvironment.lastHighwayTick)
-      SurroundingTileEnvironment.lastHighwayTick = Game.time;
-
-    this.tilesGroupedByProximity = [];
-    this.tilesOrderedByProximity = walkableTiles
+    let count = 0;
+    this.tilesOrderedByProximity = this.walkableTiles
       .map(t => {
-        let path = center.getPathTo(t.position);
+        let path = this.center.getPathTo(t.position);
+        if(path === null)
+          return null;
+
         let radius = Math.max(
-          Math.abs(t.position.x - center.position.x),
-          Math.abs(t.position.y - center.position.y)
+          Math.abs(t.position.x - this.center.position.x),
+          Math.abs(t.position.y - this.center.position.y)
         );
 
         return {
@@ -61,10 +69,12 @@ export default class SurroundingTileEnvironment {
           tile: t
         } as TileStateEnvironmentDecorator;
       })
+      .filter(x => !!x)
       .sort((a, b) => a.distance - b.distance)
-      .filter(t => minimumRadius === 1 || t.radius > (minimumRadius || -1))
+      .filter(t => this.minimumRadius === 1 || t.radius > (this.minimumRadius || -1))
       .filter(t => t.radius <= 1 || (t.radius > 2 && (t.tile.position.x % 2 !== t.tile.position.y % 2)))
-      .filter(t => this.entrypoint.terrain.reserveSpot(t.tile.position.x, t.tile.position.y));
+      .filter(() => count++ < (this.amount === -1 ? 1337 : this.amount))
+      .filter(t => this.entrypoint.terrain.reserveSpot(t.tile.position.x, t.tile.position.y, this.minimumRadius === 1 && this.radius === 1));
 
     for (let tileDecorator of this.tilesOrderedByProximity) {
       if(!this.tilesGroupedByProximity[tileDecorator.radius])
@@ -114,7 +124,7 @@ export default class SurroundingTileEnvironment {
         opacity: 0.75,
         color: color,
         lineStyle: 'dashed',
-        width: 0.01
+        width: 0.03
       });
     }, this.center.terrain.room.visuals, this.visuals);
   }
@@ -132,7 +142,7 @@ export default class SurroundingTileEnvironment {
     return center;
   }
 
-  private getEntryPoint(origin: TileState, tiles: TileState[]) {
+  private getEntryPoint(origin: TileState) {
     if(!origin)
       throw new Error('No origin set.');
 
@@ -142,7 +152,7 @@ export default class SurroundingTileEnvironment {
     if(!origin.position)
       throw new Error('No origin position set.');
 
-    let center = this.getCenter(origin, tiles);
+    let center = this.getCenter(origin, this.walkableTiles);
     if(!center)
       throw new Error('No center found.');
 

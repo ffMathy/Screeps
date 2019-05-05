@@ -11,6 +11,7 @@ import { Direction } from "helpers/Coordinates";
 import TileState from "terrain/TileState";
 import CreepDecorator from "CreepDecorator";
 import Arrays from "helpers/Arrays";
+import ExtensionDecorator from "ExtensionDecorator";
 
 export interface RoomStrategy {
   readonly name: string;
@@ -30,6 +31,7 @@ interface NeighbouringRoom {
 export default class RoomDecorator {
   public sources: SourceDecorator[];
   public constructionSites: ConstructionSite[];
+  public extensions: ExtensionDecorator[];
   public spawns: SpawnDecorator[];
   public terrain: TerrainDecorator;
   public structures: Structure[];
@@ -43,6 +45,7 @@ export default class RoomDecorator {
   private strategy: RoomStrategy;
 
   private lastRefreshTick: number;
+  // private costMatrix: CostMatrix;
 
   private _neighbouringRoomsByDirection: { [direction: number]: NeighbouringRoom };
   private _allNeighbouringRooms: NeighbouringRoom[];
@@ -66,6 +69,7 @@ export default class RoomDecorator {
   {
     this.creeps = new CreepsDecorator(rooms, this);
 
+    this.extensions = [];
     this.exits = [];
     this.constructionSites = [];
     this.visuals = [];
@@ -76,33 +80,27 @@ export default class RoomDecorator {
     this._allNeighbouringRooms = [];
   }
 
-  findWalkablePath(fromPos: RoomPosition, toPos: RoomPosition, opts?: FindPathOpts): PathStep[] {
+  findWalkablePath(fromPos: RoomPosition, toPos: RoomPosition, opts?: PathFinderOpts) {
     if(!opts)
       opts = {};
 
-    opts.ignoreCreeps = true;
+    let tile = this.terrain.getTileAt(toPos);
+    opts.roomCallback = (_roomName) => {
+      if(_roomName !== this.roomName)
+        return false;
 
-    let spotTiles = this.terrain
-      .spotTiles
-      .map(x => x.position);
-    let tilesToIgnore = [...spotTiles, ...this.exits.map(x => x.position)];
+      // if(!this.costMatrix)
+      //   throw new Error('Tried to find path without cost matrix calculated.');
 
-    opts.costCallback = (_roomName, costMatrix) => {
-      for(let structure of this.structures)
-        costMatrix.set(structure.pos.x, structure.pos.y, 255);
-
-      for(let avoidPosition of tilesToIgnore)
-        costMatrix.set(avoidPosition.x, avoidPosition.y, 100);
-
-      return costMatrix;
+      return this.getCostMatrix(tile);
     };
 
-    let path = this.room.findPath(fromPos, toPos, opts);
-    if(path.length > 0) {
-      let lastStep = path[path.length-1];
+    let path = PathFinder.search(fromPos, toPos, opts);
+    if(path.path.length > 0) {
+      let lastStep = path.path[path.path.length-1];
       let lastTile = this.terrain.getTileAt(lastStep.x, lastStep.y);
       if(!lastTile.isWalkable)
-        path.splice(path.length-1, 1);
+        path.path.splice(path.path.length-1, 1);
     }
 
     return path;
@@ -144,6 +142,8 @@ export default class RoomDecorator {
 
     this.creeps.initialize();
 
+    this.terrain.initialize();
+
     this.strategy = new ConstructStructuresRoomStrategy(this);
   }
 
@@ -156,6 +156,7 @@ export default class RoomDecorator {
     if (!this.isClaimed) {
       this.spawns = [];
       this.constructionSites = [];
+      this.extensions = [];
     } else {
       this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES) || [];
       for(let constructionSite of this.constructionSites) {
@@ -175,6 +176,13 @@ export default class RoomDecorator {
         }
       }
 
+      this.extensions = this.structures
+        .filter(structure => structure.structureType === STRUCTURE_EXTENSION)
+        .map((x: Extension) => new ExtensionDecorator(this, x));
+
+      for(let extension of this.extensions)
+        extension.initialize();
+
       this.spawns = this.room
         .find(FIND_MY_SPAWNS)
         .map((x: Spawn) => new SpawnDecorator(this.game, this, x));
@@ -182,8 +190,32 @@ export default class RoomDecorator {
       for(let spawn of this.spawns)
         spawn.initialize();
 
+      // this.costMatrix = this.getCostMatrix();
+
       this.terrain.onChange.fire();
     }
+  }
+
+  private getCostMatrix(targetTile: TileState) {
+    let costMatrix = new PathFinder.CostMatrix();
+
+    let spotTiles = this.terrain
+      .spotTiles
+      .map(x => x.position);
+    let tilesToIgnore = [...spotTiles, ...this.exits.map(x => x.position)];
+
+    Arrays.remove(tilesToIgnore, targetTile.position);
+
+    for(let structure of this.structures)
+      costMatrix.set(structure.pos.x, structure.pos.y, 255);
+
+    for(let structure of this.constructionSites)
+      costMatrix.set(structure.pos.x, structure.pos.y, 255);
+
+    for(let avoidPosition of tilesToIgnore)
+      costMatrix.set(avoidPosition.x, avoidPosition.y, 255);
+
+    return costMatrix;
   }
 
   refresh() {
@@ -273,20 +305,6 @@ export default class RoomDecorator {
       });
   }
 
-  //TODO: optimize this
-  getTransferrableStructures(): (Structure | Spawn | Tower)[] {
-    if (!this.room)
-      return [];
-
-    return this.room.find(FIND_STRUCTURES, {
-      filter: (structure) => {
-        return (structure.structureType == STRUCTURE_EXTENSION ||
-          structure.structureType == STRUCTURE_SPAWN ||
-          structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
-      }
-    });
-  }
-
   setStrategy(strategy: RoomStrategy) {
     this.strategy = strategy;
 
@@ -310,12 +328,13 @@ export default class RoomDecorator {
   }
 
   tick() {
-    this.renderVisuals();
-
     this.strategy.tick();
     this.creeps.tick();
 
     for(let spawn of this.spawns)
       spawn.tick();
+
+    if(this.game.cpuUsedPercentage < 0.25)
+      this.renderVisuals();
   }
 }

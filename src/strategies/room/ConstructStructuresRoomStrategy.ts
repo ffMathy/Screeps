@@ -12,6 +12,8 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
   tick() {
     let room = this.room;
+    room.setStrategy(new StrategyPickingRoomStrategy(room));
+
     if(!room.room || !room.room.controller || !room.room.controller.my)
       return;
 
@@ -23,6 +25,10 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
   private buildSpiralStructures() {
     let room = this.room;
+
+    let spawn = room.spawns[0].spawn;
+    if(!spawn)
+      return;
 
     let rawStructures = (room.room.find(FIND_STRUCTURES) as Structure[]) || [];
     let structures = rawStructures.filter(x => x.structureType !== STRUCTURE_ROAD);
@@ -43,15 +49,16 @@ export default class ConstructStructuresRoomStrategy implements RoomStrategy {
 
       let countBuilt = structuresOfType.length + constructionSitesOfType.length;
 
-      let offset = countBuilt + (countBuilt % 3) - 1 + 48;
+      let max = 2;
+      let offset = countBuilt + (countBuilt % max) - 1 + 48;
       while(countBuilt < totalAvailable) {
         let currentOffset = offset;
 
         let position = Coordinates.calculateSpiralOffset(currentOffset);
-        position.x += room.room.controller.pos.x;
-        position.y += room.room.controller.pos.y;
+        position.x += spawn.pos.x;
+        position.y += spawn.pos.y;
 
-        offset += 3;
+        offset += max;
 
         let isWalkable = room.terrain.getTileAt(position.x, position.y).isWalkable;
         if(!isWalkable)

@@ -15,6 +15,18 @@ export default class SpawnDecorator {
 
     readonly id: string;
 
+    get energyCapacity() {
+        return this.spawn.energyCapacity;
+    }
+
+    get energy() {
+        return this.spawn.energy;
+    }
+
+    get needsEnergy() {
+        return this.energy < this.energyCapacity && this.transferEnvironment.occupiedTiles.length < 3;
+    }
+
     constructor(
         private readonly game: GameDecorator,
         public readonly room: RoomDecorator,

@@ -1,8 +1,16 @@
-let doProfiling = false;
+let doProfiling = true;
 global['__PROFILER_ENABLED__'] = doProfiling;
 
 import GameDecorator from 'GameDecorator';
 import * as Profiler from "profiler";
+
+if(doProfiling) {
+    const profiler = Profiler.init();
+    profiler.stop();
+    profiler.clear();
+
+    global['profiler'] = profiler;
+}
 
 global['roomByName'] = (name: string) => GameDecorator.instance.rooms.byName[name];
 global['killAllCreepsExcept'] = (except: number) => {
@@ -28,14 +36,6 @@ global['getMainRoom'] = () => {
 global['killAllCreepsExcept'](30);
 
 global['gameDecorator'] = GameDecorator.instance;
-
-if(doProfiling) {
-    const profiler = Profiler.init();
-    profiler.stop();
-    profiler.clear();
-
-    global['profiler'] = profiler;
-}
 
 console.log('loaded');
 

@@ -5,7 +5,7 @@ import profile from "profiler";
 @profile
 export default class TransferCreepStrategy implements CreepStrategy {
   get name() {
-    return "transfer";
+    return "transfer-" + this.targetId;
   }
 
   constructor(

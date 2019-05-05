@@ -37,12 +37,17 @@ export default class CreepDecorator {
   }
 
   set strategy(strategy: CreepStrategy) {
+    let previousStrategy = this._strategy;
+
     this._strategy = strategy;
     this.memory.strategy = strategy ? strategy.name : '';
     if (!strategy) {
       this.room.creeps.setIdle(this);
     } else {
       this.say(strategy.name, true);
+
+      if(previousStrategy)
+        strategy.tick();
     }
   }
 

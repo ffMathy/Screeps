@@ -15,6 +15,8 @@ export default class TerrainDecorator {
 
   readonly spotTiles: Array<TileState>;
 
+  private isInitialized: boolean;
+
   public readonly onChange: EventHandler<TerrainDecorator>;
 
   constructor(
@@ -26,8 +28,31 @@ export default class TerrainDecorator {
     this.onChange = new EventHandler(this);
   }
 
-  reserveSpot(x: number, y: number) {
-    return Arrays.add(this.spotTiles, this.getTileAt(x, y));
+  initialize() {
+    if(this.isInitialized)
+      throw new Error('Already initialized.');
+
+    this.isInitialized = true;
+    for(let tile of this.tiles.filter(t => !!t))
+      tile.initialize();
+  }
+
+  reserveSpot(x: number, y: number, ignoreNeighbours: boolean) {
+    let tile = this.getTileAt(x, y);
+    if(this.spotTiles.indexOf(tile) > -1)
+      return false;
+
+    if(!ignoreNeighbours) {
+      let reservedNeighbours =
+        this.spotTiles.indexOf(this.getTileAt(x+1, y)) > -1 ||
+        this.spotTiles.indexOf(this.getTileAt(x-1, y)) > -1 ||
+        this.spotTiles.indexOf(this.getTileAt(x, y+1)) > -1 ||
+        this.spotTiles.indexOf(this.getTileAt(x, y-1)) > -1;
+      if(reservedNeighbours)
+        return false;
+    }
+
+    return Arrays.add(this.spotTiles, tile);
   }
 
   getTileAt(position: RoomPosition): TileState
@@ -45,10 +70,14 @@ export default class TerrainDecorator {
     let i = Coordinates.roomPositionToNumber(x, y);
     let tile = this.tiles[i];
     if (!tile) {
-      tile = this.tiles[i] = new TileState(
+      let newTile = new TileState(
         this,
         x,
         y);
+      tile = this.tiles[i] = newTile;
+
+      if(this.isInitialized)
+        newTile.initialize();
     }
 
     return tile;
