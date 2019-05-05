@@ -4,6 +4,33 @@ import EventHandler from "../helpers/EventHandler";
 import SurroundingTileEnvironment from "terrain/SurroundingTileEnvironment";
 import TerrainDecorator from "./TerrainDecorator";
 
+//TODO: use LinkedList
+export class Path {
+  target: TileState;
+  origin: TileState;
+
+  nextTiles: TileState[];
+
+  constructor(private readonly tile: TileState) {
+
+  }
+
+  get nextTile() {
+    return this.nextTiles[0] || null;
+  }
+
+  get nextDirection() {
+    let nextStep = this.nextTile;
+    if(!nextStep)
+      return null;
+
+    return Coordinates.directionFromCoordinates(
+      this.tile.position,
+      nextStep.position
+    );
+  }
+}
+
 export default class TileState {
   private surroundingEnvironmentsByRadius: {
     [key: string]: SurroundingTileEnvironment;
@@ -11,11 +38,15 @@ export default class TileState {
 
   private _creep: CreepDecorator;
   private _futureCreep: CreepDecorator;
+  private _constructionSite: ConstructionSite;
+  private _structure: Structure;
 
   private readonly modifier: number;
 
   readonly onCreepChanged: EventHandler<TileState, [CreepDecorator]>;
   readonly onFutureCreepChanged: EventHandler<TileState, [CreepDecorator]>;
+  readonly onConstructionSiteChanged: EventHandler<TileState, [ConstructionSite]>;
+  readonly onStructureChanged: EventHandler<TileState, [Structure]>;
 
   readonly popularity = {
     score: 0,
@@ -25,18 +56,29 @@ export default class TileState {
   readonly position: RoomPosition;
 
   private pathsTo: {
-    [positionKey: string]: {
-      distance: number;
-      nextStep: TileState;
-      nextDirection: Direction;
-      nextSteps: Array<PathStep>;
-    };
+    [positionKey: string]: Path;
   };
 
-  constructionSite: ConstructionSite;
   road: StructureRoad;
   wall: StructureWall;
-  structure: Structure;
+
+  get constructionSite() {
+    return this._constructionSite;
+  }
+
+  set constructionSite(value: ConstructionSite) {
+    this._constructionSite = value;
+    this.onConstructionSiteChanged.fire(this._constructionSite);
+  }
+
+  get structure() {
+    return this._structure;
+  }
+
+  set structure(value: Structure) {
+    this._structure = value;
+    this.onStructureChanged.fire(this._structure);
+  }
 
   get isWalkable() {
     return this.modifier !== TERRAIN_MASK_WALL && !this.structure;
@@ -72,13 +114,42 @@ export default class TileState {
     this.position = terrain.room.room.getPositionAt(x, y);
     this.modifier = terrain.terrain.get(x, y);
 
-    this.surroundingEnvironmentsByRadius = {};
+    this.resetPaths();
+    this.resetEnvironments();
 
     this.onCreepChanged = new EventHandler(this);
     this.onFutureCreepChanged = new EventHandler(this);
+    this.onStructureChanged = new EventHandler(this);
+    this.onConstructionSiteChanged = new EventHandler(this);
 
-    this.pathsTo = {};
-    terrain.onChange.addListener(() => this.pathsTo = {}, false);
+    terrain.onChange.addListener(() => this.resetPaths(), false);
+
+    this.onStructureChanged.addListener(() => this.resetEnvironments(), false);
+    this.onConstructionSiteChanged.addListener(() => this.resetEnvironments(), false);
+  }
+
+  private resetPaths() {
+    if(this.pathsTo) {
+      for(let key in this.pathsTo) {
+        let path = this.pathsTo[key];
+        if(path.origin !== this)
+          continue;
+
+        delete this.pathsTo[key];
+        for(let step of path.nextTiles) {
+          delete step.pathsTo[key];
+        }
+      }
+    }
+
+    this.pathsTo = Object.create(null);
+  }
+
+  private resetEnvironments() {
+    for (let radius in this.surroundingEnvironmentsByRadius)
+      this.surroundingEnvironmentsByRadius[radius].dispose();
+
+    this.surroundingEnvironmentsByRadius = Object.create(null);
   }
 
   getSurroundingEnvironment(radius: number, minimumRadius: number, avoidRoads: boolean = false) {
@@ -119,33 +190,41 @@ export default class TileState {
       return path;
 
     let nextStep: TileState;
-    let nextDirection: Direction;
-    let distance: number;
-    let nextSteps: Array<PathStep>;
+    let nextTiles: Array<TileState>;
 
     let steps = this.terrain.room.findWalkablePath(this.position, targetPosition);
-
     if (steps.length === 0) {
-      nextDirection = null;
       nextStep = null;
-      distance = null;
-      nextSteps = [];
+      nextTiles = [];
     } else {
-      nextSteps = steps;
+      nextTiles = steps.map(step => this.terrain.getTileAt(step.x, step.y));
 
       let firstStep = steps[0];
       nextStep = this.terrain.getTileAt(firstStep.x, firstStep.y);
-
-      nextDirection = Coordinates.directionFromCoordinates(this.position, nextStep.position);
-      distance = steps.length;
     }
 
-    this.pathsTo[key] = !nextStep ? null : {
-      distance: distance,
-      nextStep: nextStep,
-      nextDirection: nextDirection,
-      nextSteps: nextSteps
+    let target = this.terrain.getTileAt(targetPosition);
+
+    let getPathObject = (ownerTile: TileState) => {
+      let path = new Path(ownerTile);
+      path.nextTiles = nextTiles;
+      path.target = target;
+      path.origin = this;
+
+      return path;
     };
+
+    this.pathsTo[key] = !nextStep ? null : getPathObject(this);
+
+    while(nextTiles[0]) {
+      let step = nextTiles[0];
+      if(step.pathsTo[key])
+        break;
+
+      nextTiles = nextTiles.slice(1);
+
+      step.pathsTo[key] = getPathObject(step);
+    }
 
     return this.pathsTo[key];
   }

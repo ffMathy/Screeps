@@ -1,7 +1,7 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 import profile from "profiler";
-import { Direction } from "helpers/Coordinates";
+import Coordinates, { Direction } from "helpers/Coordinates";
 import GameDecorator from "GameDecorator";
 
 @profile
@@ -34,8 +34,8 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     let path = this.creep.tile.getPathTo(this.via || this.targetPosition);
 
     let isFinished = this.via ?
-      !path || path.distance <= 1 :
-      path === null;
+      !path || path.nextTiles.length <= 1 :
+      path.nextTile === null;
 
     if(isFinished) {
       if(this.via) {
@@ -50,14 +50,19 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     this.direction = this.getDirectionEmojiFromDirection(direction);
 
     try {
-      if(path.nextStep.structure) {
+      if(path.nextTiles[0].structure) {
         throw new Error('Trying to walk into structure - perhaps the terrain was not refreshed?');
       }
 
-      if(path.nextStep.creep || path.nextStep.structure) {
+      if(path.nextTiles[0].creep || path.nextTiles[0].structure) {
         direction = Math.floor(Math.random() * 7.5) + 1;
         this.direction += this.getDirectionEmojiFromDirection(direction);
       }
+
+      let directionCoordinates = Coordinates.coordinatesFromDirection(direction);
+      let newCoordinates = { x: directionCoordinates.x + this.creep.creep.pos.x, y: directionCoordinates.y + this.creep.creep.pos.y };
+      if(newCoordinates.x === 0 || newCoordinates.y === 0 || newCoordinates.x === 49 || newCoordinates.y === 49)
+        return;
 
       let moveResult = this.creep.creep.move(direction);
       if(moveResult === ERR_BUSY) {
@@ -73,8 +78,8 @@ export default class WalkToCreepStrategy implements CreepStrategy {
     } catch(ex) {
       console.log(this.creep.creep.name,
         this.successorStrategy && this.successorStrategy.name,
-        JSON.stringify(path.nextStep.position),
-        JSON.stringify(path.nextSteps[path.nextSteps.length-1]));
+        JSON.stringify(path.nextTiles[0].position),
+        JSON.stringify(path.nextTiles[path.nextTiles.length-1].position));
       throw ex;
     }
   }

@@ -5,14 +5,25 @@ import TerrainDecorator from "terrain/TerrainDecorator";
 import ConstructStructuresRoomStrategy from "strategies/room/ConstructStructuresRoomStrategy";
 import CreepsDecorator from "CreepsDecorator";
 import profile from "profiler";
-import DeferHelper from "helpers/DeferHelper";
 import SourceDecorator from "SourceDecorator";
 import ControllerDecorator from "ControllerDecorator";
+import { Direction } from "helpers/Coordinates";
+import TileState from "terrain/TileState";
+import CreepDecorator from "CreepDecorator";
+import Arrays from "helpers/Arrays";
 
 export interface RoomStrategy {
   readonly name: string;
 
   tick();
+}
+
+interface NeighbouringRoom {
+  direction: Direction,
+  room: RoomDecorator,
+  isClaimed: boolean,
+  isBeingExploredBy: CreepDecorator,
+  exits: TileState[]
 }
 
 @profile
@@ -23,6 +34,7 @@ export default class RoomDecorator {
   public terrain: TerrainDecorator;
   public structures: Structure[];
   public controller: ControllerDecorator;
+  public exits: TileState[];
 
   public readonly visuals: ((visual: RoomVisual) => RoomVisual)[];
 
@@ -32,15 +44,8 @@ export default class RoomDecorator {
 
   private lastRefreshTick: number;
 
-  private _neighbouringRoomsByDirection: { [direction: string]: RoomDecorator };
-  private _allNeighbouringRooms: RoomDecorator[];
-
-  private _unexploredNeighbourNameOffset: number;
-  private _unexploredNeighbourNames: string[];
-
-  public get unexploredNeighbourNames() {
-    return this._unexploredNeighbourNames;
-  }
+  private _neighbouringRoomsByDirection: { [direction: number]: NeighbouringRoom };
+  private _allNeighbouringRooms: NeighbouringRoom[];
 
   public get neighbours() {
     return this._allNeighbouringRooms;
@@ -60,11 +65,13 @@ export default class RoomDecorator {
     public readonly roomName: string)
   {
     this.creeps = new CreepsDecorator(rooms, this);
+
+    this.exits = [];
     this.constructionSites = [];
     this.visuals = [];
+    this.structures = [];
+    this.sources = [];
 
-    this._unexploredNeighbourNameOffset = 0;
-    this._unexploredNeighbourNames = [];
     this._neighbouringRoomsByDirection = {};
     this._allNeighbouringRooms = [];
   }
@@ -78,12 +85,13 @@ export default class RoomDecorator {
     let spotTiles = this.terrain
       .spotTiles
       .map(x => x.position);
+    let tilesToIgnore = [...spotTiles, ...this.exits.map(x => x.position)];
 
     opts.costCallback = (_roomName, costMatrix) => {
       for(let structure of this.structures)
         costMatrix.set(structure.pos.x, structure.pos.y, 255);
 
-      for(let avoidPosition of spotTiles)
+      for(let avoidPosition of tilesToIgnore)
         costMatrix.set(avoidPosition.x, avoidPosition.y, 100);
 
       return costMatrix;
@@ -149,13 +157,13 @@ export default class RoomDecorator {
       this.spawns = [];
       this.constructionSites = [];
     } else {
-      this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES);
+      this.constructionSites = this.room.find(FIND_CONSTRUCTION_SITES) || [];
       for(let constructionSite of this.constructionSites) {
         let tile = this.terrain.getTileAt(constructionSite.pos);
         tile.constructionSite = constructionSite;
       }
 
-      this.structures = this.room.find(FIND_STRUCTURES);
+      this.structures = this.room.find(FIND_STRUCTURES) || [];
       for(let structure of this.structures) {
         let tile = this.terrain.getTileAt(structure.pos);
         if(structure.structureType === STRUCTURE_WALL) {
@@ -180,14 +188,42 @@ export default class RoomDecorator {
 
   refresh() {
     this.refreshNow();
-    DeferHelper.add(() => this.refreshNow());
+    // DeferHelper.add(() => this.refreshNow());
   }
 
-  getRandomUnexploredNeighbourName() {
-    if (this._unexploredNeighbourNames.length === 0)
-      return null;
+  private getExitsInDirection(direction: Direction) {
+    let exits = new Array<TileState>();
+    for(let i=0;i<50;i++) {
+      let position: { x: number, y: number };
 
-    return this._unexploredNeighbourNames[this._unexploredNeighbourNameOffset++ % this._unexploredNeighbourNames.length];
+      switch(direction) {
+        case Direction.TOP_LEFT:
+        case Direction.LEFT:
+        case Direction.BOTTOM_LEFT:
+          position = { x: 0, y: i };
+          break;
+
+        case Direction.TOP:
+          position = { x: i, y: 0 };
+          break;
+
+        case Direction.TOP_RIGHT:
+        case Direction.RIGHT:
+        case Direction.BOTTOM_RIGHT:
+          position = { x: 49, y: i };
+          break;
+
+        case Direction.BOTTOM:
+          position = { x: i, y: 49 };
+          break;
+      }
+
+      let tile = this.terrain.getTileAt(this.room.getPositionAt(position.x, position.y));
+      if(tile.isWalkable)
+        Arrays.add(exits, tile);
+    }
+
+    return exits;
   }
 
   detectNeighbours() {
@@ -196,20 +232,26 @@ export default class RoomDecorator {
 
     this._neighbouringRoomsByDirection = {};
     this._allNeighbouringRooms.splice(0);
-    this._unexploredNeighbourNames.splice(0);
 
     let exits = this.game.game.map.describeExits(this.room.name);
     for (let direction in exits) {
       let roomName = exits[direction];
 
+      let roomDecorator = new RoomDecorator(this.game, this.rooms, roomName);
       if (Game.map.isRoomAvailable(roomName)) {
-        let decorator = this.rooms.detectRoom(roomName);
+        let neighbouringRoom: NeighbouringRoom = {
+          direction: +direction,
+          isClaimed: roomDecorator.isClaimed,
+          isBeingExploredBy: null,
+          room: roomDecorator,
+          exits: this.getExitsInDirection(+direction)
+        };
 
-        this._neighbouringRoomsByDirection[direction] = decorator;
-        this._allNeighbouringRooms.push(decorator);
+        this._neighbouringRoomsByDirection[+direction] = neighbouringRoom;
+        this._allNeighbouringRooms.push(neighbouringRoom);
 
-        if (!decorator.isClaimed)
-          this._unexploredNeighbourNames.push(roomName);
+        for(let exit of neighbouringRoom.exits)
+          Arrays.add(this.exits, exit);
       }
     }
   }
@@ -252,14 +294,23 @@ export default class RoomDecorator {
       this.room.memory.strategy = strategy.name;
   }
 
-  tick() {
-    if(this.room && this.room.visual) {
-      for(let visual of this.visuals) {
-        visual(this.room.visual);
-        if(this.room.visual.getSize() >= 512000)
-          break;
+  private renderVisuals() {
+    try {
+      if(this.room && this.room.visual) {
+        for(let visual of this.visuals) {
+          visual(this.room.visual);
+          if(this.room.visual.getSize() >= 512000)
+            break;
+        }
       }
+    } catch(ex) {
+      console.log('room visual error');
+      throw ex;
     }
+  }
+
+  tick() {
+    this.renderVisuals();
 
     this.strategy.tick();
     this.creeps.tick();

@@ -5,7 +5,7 @@ import profile from "profiler";
 @profile
 export default class BuildingCreepStrategy implements CreepStrategy {
   get name() {
-    return "build";
+    return "build-" + this.constructionSiteId;
   }
 
   constructor(

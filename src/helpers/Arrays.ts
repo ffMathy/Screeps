@@ -10,6 +10,16 @@ export default class Arrays {
     return true;
   }
 
+  static removeFromMultiple<T>(item: T, ...arrays: T[][]) {
+    for(let array of arrays)
+      Arrays.remove(array, item);
+  }
+
+  static addToMultiple<T>(item: T, ...arrays: T[][]) {
+    for(let array of arrays)
+      Arrays.add(array, item);
+  }
+
   static insertAscending<T>(array: T[], item: T, scoreAccessor: (item: T) => number) {
     let itemScore = scoreAccessor(item);
     for(let i=0;i<array.length;i++) {

@@ -60,6 +60,8 @@ export default class CreepDecorator {
   }
 
   updateRoom() {
+    console.log('change-room', this.creep.name, this.creep.pos, this.strategy ? this.strategy.name : null);
+
     this.room.creeps.remove(this);
     this.room = this.game.rooms.fromCreep(this.creep);
     this.room.creeps.add(this);

@@ -19,6 +19,9 @@ export default class UpgradeCreepStrategy implements CreepStrategy {
 
     //TODO: claim controller if level 0
     let upgradeResult = creep.creep.upgradeController(creep.creep.room.controller);
+    if(upgradeResult === ERR_NOT_IN_RANGE)
+      return null; //TODO: throw on this error - it should never happen
+
     if (upgradeResult !== OK) {
       throw new Error('Upgrade error: ' + upgradeResult);
     }
