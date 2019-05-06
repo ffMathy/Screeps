@@ -29,6 +29,6 @@ export default class ExtensionDecorator {
 
     initialize() {
         let tile = this.room.terrain.getTileAt(this.extension.pos);
-        this.transferEnvironment = tile.getSurroundingEnvironment(1, 1);
+        this.transferEnvironment = tile.getSurroundingEnvironment(1, 1, 1);
     }
 };

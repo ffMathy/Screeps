@@ -144,7 +144,7 @@ export default class CreepsDecorator {
     return this.room
       .constructionSites
       .map(availableConstructionSite => {
-        let amount = availableConstructionSite.structureType === STRUCTURE_ROAD ? 1 : -1;
+        let amount = availableConstructionSite.structureType === STRUCTURE_ROAD ? 1 : 1;
         return this.walkToIfPossible(
           creep,
           this.room.terrain.getTileAt(availableConstructionSite.pos).getSurroundingEnvironment(3, 1, amount, true),
