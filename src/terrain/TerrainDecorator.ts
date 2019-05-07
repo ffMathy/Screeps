@@ -4,6 +4,7 @@ import TileState from "terrain/TileState";
 import EventHandler from "helpers/EventHandler";
 import Coordinates from "helpers/Coordinates";
 import Arrays from "helpers/Arrays";
+import SurroundingTileEnvironment from "./SurroundingTileEnvironment";
 
 declare interface Terrain {
   get(x: number, y: number): number
@@ -37,22 +38,29 @@ export default class TerrainDecorator {
       tile.initialize();
   }
 
-  reserveSpot(x: number, y: number, ignoreNeighbours: boolean) {
+  reserveSpot(x: number, y: number, owner: SurroundingTileEnvironment) {
     let tile = this.getTileAt(x, y);
     if(this.spotTiles.indexOf(tile) > -1)
       return false;
 
-    if(!ignoreNeighbours) {
-      let reservedNeighbours =
-        this.spotTiles.indexOf(this.getTileAt(x+1, y)) > -1 ||
-        this.spotTiles.indexOf(this.getTileAt(x-1, y)) > -1 ||
-        this.spotTiles.indexOf(this.getTileAt(x, y+1)) > -1 ||
-        this.spotTiles.indexOf(this.getTileAt(x, y-1)) > -1;
-      if(reservedNeighbours)
-        return false;
-    }
+    let reservedNeighbours =
+      this.isBlockedForOwner(x+1, y, owner) ||
+      this.isBlockedForOwner(x-1, y, owner) ||
+      this.isBlockedForOwner(x, y+1, owner) ||
+      this.isBlockedForOwner(x, y-1, owner);
+    if(reservedNeighbours)
+      return false;
 
+    tile.reservedBy = owner;
     return Arrays.add(this.spotTiles, tile);
+  }
+
+  private isBlockedForOwner(x: number, y: number, currentOwner: SurroundingTileEnvironment) {
+    let tile = this.getTileAt(x, y);
+    if(this.spotTiles.indexOf(tile) === -1)
+      return false;
+
+    return tile.reservedBy !== currentOwner;
   }
 
   getTileAt(position: RoomPosition): TileState

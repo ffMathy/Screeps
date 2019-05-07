@@ -61,6 +61,8 @@ export default class TileState {
     [positionKey: string]: Path;
   };
 
+  reservedBy: SurroundingTileEnvironment;
+
   road: StructureRoad;
   wall: StructureWall;
 
