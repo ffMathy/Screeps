@@ -202,9 +202,11 @@ export default class RoomDecorator {
     let spotTiles = this.terrain
       .spotTiles
       .map(x => x.position);
-    let tilesToIgnore = [...spotTiles, ...this.exits.map(x => x.position)];
 
-    Arrays.remove(tilesToIgnore, targetTile.position);
+    let exitTiles = this.exits.map(x => x.position);
+
+    Arrays.remove(exitTiles, targetTile.position);
+    Arrays.remove(spotTiles, targetTile.position);
 
     for(let structure of this.structures)
       costMatrix.set(structure.pos.x, structure.pos.y, 255);
@@ -212,7 +214,10 @@ export default class RoomDecorator {
     for(let structure of this.constructionSites)
       costMatrix.set(structure.pos.x, structure.pos.y, 255);
 
-    for(let avoidPosition of tilesToIgnore)
+    for(let avoidPosition of spotTiles)
+      costMatrix.set(avoidPosition.x, avoidPosition.y, 254);
+
+    for(let avoidPosition of exitTiles)
       costMatrix.set(avoidPosition.x, avoidPosition.y, 255);
 
     return costMatrix;

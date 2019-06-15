@@ -24,18 +24,18 @@ export default class WalkToCreepStrategy implements CreepStrategy {
   }
 
   tick() {
-    if(!this.creep.futureTile)
-      this.creep.futureTile = this.creep.room.terrain.getTileAt(this.targetPosition);
-
     //if spawning, the creep will be on top of a spawn temporarily.
     if(this.creep.tile.structure)
       return;
+
+    if(!this.creep.futureTile)
+      this.creep.futureTile = this.creep.room.terrain.getTileAt(this.targetPosition);
 
     let destination = this.via || this.targetPosition;
     let path = this.creep.tile.getPathTo(destination);
     if(path === null) {
       console.log('no-path', this.creep.creep.name, this.creep.creep.pos, destination);
-      return null;
+      throw new Error('No path found.');
     }
 
     let isFinished = path.nextTile === null;

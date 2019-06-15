@@ -102,6 +102,9 @@ export default class SurroundingTileEnvironment {
     for(let visual of [...this.visuals])
       Arrays.removeFromMultiple(visual, tileDecorator.tile.terrain.room.visuals, this.visuals);
 
+    tileDecorator.tile.reservedBy = null;
+    Arrays.remove(tileDecorator.tile.terrain.spotTiles, tileDecorator.tile);
+
     Arrays.removeFromMultiple(
       tileDecorator,
       this.tilesOrderedByProximity,

@@ -21,7 +21,7 @@ global['killAllCreepsExcept'] = (except: number) => {
             Game.creeps[key].suicide();
     }
 };
-global['killAllCreeps'] = () => global['killAllCreeps'](0);
+global['killAllCreeps'] = () => global['killAllCreepsExcept'](0);
 global['removeAllConstructionSites'] = () => {
     for(let room of GameDecorator.instance.rooms.all) {
         for(let constructionSite of room.constructionSites)
