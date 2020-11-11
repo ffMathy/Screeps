@@ -9,6 +9,7 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "sourceMap": true,
+    "lib": ["ES2015"],
     "baseUrl": "./src/"
   },
   "compileOnSave": false,
