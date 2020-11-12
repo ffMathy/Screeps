@@ -1,5 +1,5 @@
 import CreepDecorator from 'CreepDecorator';
-import Arrays from 'helpers/Arrays';
+import Arrays from 'legacy/helpers/Arrays';
 import RoomDecorator from 'RoomDecorator';
 import RoomsDecorator from 'RoomsDecorator';
 import { CreepStrategy } from 'strategies/Strategy';

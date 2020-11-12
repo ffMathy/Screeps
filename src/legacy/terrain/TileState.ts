@@ -1,5 +1,5 @@
 import CreepDecorator from "CreepDecorator";
-import Coordinates, { Direction } from "helpers/Coordinates";
+import Coordinates, { Direction } from "legacy/helpers/Coordinates";
 import EventHandler from "../helpers/EventHandler";
 import SurroundingTileEnvironment from "terrain/SurroundingTileEnvironment";
 import TerrainDecorator from "./TerrainDecorator";

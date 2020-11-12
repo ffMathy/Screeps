@@ -1,7 +1,7 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
 
-import Coordinates, { Direction } from "helpers/Coordinates";
+import Coordinates, { Direction } from "legacy/helpers/Coordinates";
 
 
 export default class WalkToCreepStrategy implements CreepStrategy {

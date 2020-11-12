@@ -1,9 +1,9 @@
 import RoomDecorator from "RoomDecorator";
 
 import TileState from "terrain/TileState";
-import EventHandler from "helpers/EventHandler";
-import Coordinates from "helpers/Coordinates";
-import Arrays from "helpers/Arrays";
+import EventHandler from "legacy/helpers/EventHandler";
+import Coordinates from "legacy/helpers/Coordinates";
+import Arrays from "legacy/helpers/Arrays";
 import SurroundingTileEnvironment from "./SurroundingTileEnvironment";
 
 declare interface Terrain {

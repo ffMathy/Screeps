@@ -1,6 +1,6 @@
 import RoomDecorator, { RoomStrategy } from '../../RoomDecorator';
 import StrategyPickingRoomStrategy from './StrategyPickingRoomStrategy';
-import Coordinates from 'helpers/Coordinates';
+import Coordinates from 'legacy/helpers/Coordinates';
 // import Coordinates from 'helpers/Coordinates';
 
 export default class ConstructStructuresRoomStrategy implements RoomStrategy {

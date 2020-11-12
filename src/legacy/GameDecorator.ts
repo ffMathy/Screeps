@@ -1,7 +1,7 @@
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
 
-import DeferHelper from "helpers/DeferHelper";
+import DeferHelper from "legacy/helpers/DeferHelper";
 
 
 export default class GameDecorator {

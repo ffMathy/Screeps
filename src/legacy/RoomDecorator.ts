@@ -7,10 +7,10 @@ import CreepsDecorator from "CreepsDecorator";
 
 import SourceDecorator from "SourceDecorator";
 import ControllerDecorator from "ControllerDecorator";
-import { Direction } from "helpers/Coordinates";
+import { Direction } from "legacy/helpers/Coordinates";
 import TileState from "terrain/TileState";
 import CreepDecorator from "CreepDecorator";
-import Arrays from "helpers/Arrays";
+import Arrays from "legacy/helpers/Arrays";
 import ExtensionDecorator from "ExtensionDecorator";
 
 export interface RoomStrategy {

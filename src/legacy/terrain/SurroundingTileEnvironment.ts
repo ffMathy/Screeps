@@ -1,4 +1,4 @@
-import Arrays from "helpers/Arrays";
+import Arrays from "legacy/helpers/Arrays";
 import TileState from "./TileState";
 
 export interface TileStateEnvironmentDecorator {

@@ -3,7 +3,7 @@ import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
 
 import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
-import Arrays from 'helpers/Arrays';
+import Arrays from 'legacy/helpers/Arrays';
 
 
 export default class SpawnDecorator {
