@@ -8,7 +8,7 @@ export default class ControllerDecorator {
 
   constructor(
     public readonly room: RoomDecorator,
-    public readonly controller: Controller) {
+    public readonly controller: StructureController) {
   }
 
   initialize() {

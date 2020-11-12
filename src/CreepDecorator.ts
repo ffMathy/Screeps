@@ -52,7 +52,7 @@ export default class CreepDecorator {
   }
 
   public get memory(): CreepMemory {
-    return this.creep.memory;
+    return this.creep.memory as any;
   }
 
   constructor(
@@ -65,7 +65,7 @@ export default class CreepDecorator {
   }
 
   updateRoom() {
-    console.log('change-room', this.creep.name, this.creep.pos, this.strategy ? this.strategy.name : null);
+    console.log('room-change', this.creep.name, this.creep.pos, this.strategy ? this.strategy.name : null);
 
     this.room.creeps.remove(this);
     this.room = this.game.rooms.fromCreep(this.creep);

@@ -5,35 +5,35 @@ import profile from "profiler";
 
 @profile
 export default class ExploreCreepStrategy implements CreepStrategy {
-  private target: RoomPosition;
+    private target: RoomPosition;
 
-  private fromRoomName: string;
+    private fromRoomName: string;
 
-  get name() {
-    return "explore";
-  }
-
-  constructor(
-    private readonly creep:CreepDecorator,
-    private readonly roomName: string)
-  {
-  }
-
-  tick() {
-    var creep=this.creep;
-    if(!this.target) {
-      this.target = creep.creep.pos.findClosestByPath(creep.creep.room.findExitTo(this.roomName));
-      this.fromRoomName = creep.creep.room.name;
-
-      if(this.roomName === this.fromRoomName)
-        return new ClaimCreepStrategy(creep);
+    get name() {
+        return "explore";
     }
 
-    if(this.fromRoomName !== creep.creep.room.name) {
-      return new ClaimCreepStrategy(creep);
+    constructor(
+        private readonly creep: CreepDecorator,
+        private readonly roomName: string) {
     }
 
-    if(!this.target)
-      throw new Error("No target exit from room " + this.fromRoomName + " to room " + this.roomName + " found.");
-  }
+    tick() {
+        var creep = this.creep;
+        if (!this.target) {
+            const exit = creep.creep.room.findExitTo(this.roomName);
+            this.target = creep.creep.pos.findClosestByPath(exit as any) as RoomPosition;
+            this.fromRoomName = creep.creep.room.name;
+
+            if (this.roomName === this.fromRoomName)
+                return new ClaimCreepStrategy(creep);
+        }
+
+        if (this.fromRoomName !== creep.creep.room.name) {
+            return new ClaimCreepStrategy(creep);
+        }
+
+        if (!this.target)
+            throw new Error("No target exit from room " + this.fromRoomName + " to room " + this.roomName + " found.");
+    }
 }

@@ -22,7 +22,7 @@ export default class ExtensionDecorator {
 
     constructor(
         public readonly room: RoomDecorator,
-        public readonly extension: Extension)
+        public readonly extension: StructureExtension)
     {
         this.id = extension.id;
     }

@@ -106,7 +106,7 @@ export default class RoomDecorator {
     return path;
   }
 
-  createConstructionSites(positions: RoomPosition[], structureType: string) {
+  createConstructionSites(positions: RoomPosition[], structureType: BuildableStructureConstant) {
     let countBuilt = 0;
     for(let position of positions) {
       let tile = this.terrain.getTileAt(position);
@@ -178,14 +178,14 @@ export default class RoomDecorator {
 
       this.extensions = this.structures
         .filter(structure => structure.structureType === STRUCTURE_EXTENSION)
-        .map((x: Extension) => new ExtensionDecorator(this, x));
+        .map((x: StructureExtension) => new ExtensionDecorator(this, x));
 
       for(let extension of this.extensions)
         extension.initialize();
 
       this.spawns = this.room
         .find(FIND_MY_SPAWNS)
-        .map((x: Spawn) => new SpawnDecorator(this.game, this, x));
+        .map((x: StructureSpawn) => new SpawnDecorator(this.game, this, x));
 
       for(let spawn of this.spawns)
         spawn.initialize();
@@ -314,7 +314,7 @@ export default class RoomDecorator {
     this.strategy = strategy;
 
     if(this.room)
-      this.room.memory.strategy = strategy.name;
+      this.room.memory["strategy"] = strategy.name;
   }
 
   private renderVisuals() {

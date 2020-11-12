@@ -30,7 +30,7 @@ export default class SpawnDecorator {
     constructor(
         private readonly game: GameDecorator,
         public readonly room: RoomDecorator,
-        public readonly spawn: Spawn)
+        public readonly spawn: StructureSpawn)
     {
         this.spawnQueue = [];
 
