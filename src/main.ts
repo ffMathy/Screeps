@@ -1,17 +1,22 @@
-import GameDecorator from 'GameDecorator';
+import { intentsByName } from "intents/spawn";
 
-let lastError = null;
+var initialized = false;
+
+function initialize() {
+    initialized = true;
+
+
+}
+
+export function getUniqueId() {
+    Memory.uniqueId = +Memory.uniqueId + 1;
+    return Memory.uniqueId + "";
+}
 
 export const loop = function() {
-    if(lastError) {
-        console.log(lastError);
-        return;
-    }
-
-    try {
-        GameDecorator.instance.tick();
-    } catch(ex) {
-        lastError = ex;
-        throw ex;
-    }
+    if(!initialized)
+        initialize();
+        
+    for(let spawn of _.values(Game.spawns))
+        tickSpawn
 }
