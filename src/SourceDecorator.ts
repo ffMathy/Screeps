@@ -1,8 +1,8 @@
 import RoomDecorator from 'RoomDecorator';
-import profile from 'profiler';
+
 import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
 
-@profile
+
 export default class SourceDecorator {
     harvestEnvironment: SurroundingTileEnvironment;
 

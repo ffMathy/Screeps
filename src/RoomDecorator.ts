@@ -4,7 +4,7 @@ import RoomsDecorator from "RoomsDecorator";
 import TerrainDecorator from "terrain/TerrainDecorator";
 import ConstructStructuresRoomStrategy from "strategies/room/ConstructStructuresRoomStrategy";
 import CreepsDecorator from "CreepsDecorator";
-import profile from "profiler";
+
 import SourceDecorator from "SourceDecorator";
 import ControllerDecorator from "ControllerDecorator";
 import { Direction } from "helpers/Coordinates";
@@ -27,7 +27,7 @@ interface NeighbouringRoom {
   exits: TileState[]
 }
 
-@profile
+
 export default class RoomDecorator {
   public sources: SourceDecorator[];
   public constructionSites: ConstructionSite[];

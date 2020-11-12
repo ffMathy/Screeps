@@ -1,9 +1,9 @@
 import CreepDecorator from "CreepDecorator";
 import ClaimCreepStrategy from "./ClaimCreepStrategy";
 import { CreepStrategy } from "strategies/Strategy";
-import profile from "profiler";
 
-@profile
+
+
 export default class ExploreCreepStrategy implements CreepStrategy {
     private target: RoomPosition;
 

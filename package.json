@@ -9,8 +9,9 @@
     "watch": "webpack --colors --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typings": "typings",
-    "server:init": "screeps init",
-    "server:run": "screeps start --steam_api_key="
+    "sim": "xcopy /y \"%CD%\\dist\\dev\\main.js\" \"%LOCALAPPDATA%\\Screeps\\scripts\\screeps.com\\default\\main.js\"",
+    "server:init": "docker run -it --rm -v ./server:/screeps quay.io/ags131/screeps-server init",
+    "server:start": "docker run -d --name screeps-server -v ./server:/screeps -p 21025:21025 quay.io/ags131/screeps-server"
   },
   "author": "",
   "license": "MIT",
@@ -25,7 +26,6 @@
     "git-rev-sync": "^1.9.1",
     "lodash": "^3.10.1",
     "mocha": "^3.3.0",
-    "screeps": "^4.2.3",
     "screeps-webpack-plugin": "https://github.com/langri-sha/screeps-webpack-plugin.git",
     "source-map-loader": "^0.2.1",
     "ts-node": "^3.0.4",

@@ -7,11 +7,11 @@ import HarvestCreepStrategy from 'strategies/creep/HarvestCreepStrategy';
 import UpgradeCreepStrategy from 'strategies/creep/UpgradeCreepStrategy';
 import TransferCreepStrategy from 'strategies/creep/TransferCreepStrategy';
 import WalkToCreepStrategy from 'strategies/creep/WalkToCreepStrategy';
-import profile from 'profiler';
+
 import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
 import BuildingCreepStrategy from 'strategies/creep/BuildingCreepStrategy';
 
-@profile
+
 export default class CreepsDecorator {
   public all: CreepDecorator[];
   public active: CreepDecorator[];

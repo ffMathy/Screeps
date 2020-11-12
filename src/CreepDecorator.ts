@@ -1,14 +1,14 @@
 import RoomDecorator from 'RoomDecorator';
 import GameDecorator from 'GameDecorator';
 import { CreepStrategy } from 'strategies/Strategy';
-import profile from 'profiler';
+
 import TileState from "terrain/TileState";
 
 export interface CreepMemory {
   strategy: string;
 }
 
-@profile
+
 export default class CreepDecorator {
   public room: RoomDecorator;
 

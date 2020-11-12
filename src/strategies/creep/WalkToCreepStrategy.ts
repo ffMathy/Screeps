@@ -1,9 +1,9 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
-import profile from "profiler";
+
 import Coordinates, { Direction } from "helpers/Coordinates";
 
-@profile
+
 export default class WalkToCreepStrategy implements CreepStrategy {
   private direction: string;
 

@@ -1,11 +1,11 @@
 import CreepDecorator from 'CreepDecorator';
 import GameDecorator from 'GameDecorator';
 import RoomDecorator from 'RoomDecorator';
-import profile from 'profiler';
+
 import SurroundingTileEnvironment from 'terrain/SurroundingTileEnvironment';
 import Arrays from 'helpers/Arrays';
 
-@profile
+
 export default class SpawnDecorator {
     private readonly spawnName: string;
 
@@ -113,9 +113,6 @@ export default class SpawnDecorator {
         if(!this.room.creeps.isPopulationMaintained) {
             this.spawnCreep([MOVE, MOVE, CARRY, CARRY, WORK], this.room.roomName);
         }
-        //  else if(this.room.creeps.isPopulationMaintained && this.room.unexploredNeighbourNames.length > 0) {
-        //     this.spawnCreep([CLAIM, MOVE], this.room.getRandomUnexploredNeighbourName());
-        // }
     }
 
     tick() {

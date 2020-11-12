@@ -1,8 +1,8 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
-import profile from "profiler";
 
-@profile
+
+
 export default class ClaimCreepStrategy implements CreepStrategy {
   get name() {
     return "claim";

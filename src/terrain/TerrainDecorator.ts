@@ -1,5 +1,5 @@
 import RoomDecorator from "RoomDecorator";
-import profile from "profiler";
+
 import TileState from "terrain/TileState";
 import EventHandler from "helpers/EventHandler";
 import Coordinates from "helpers/Coordinates";
@@ -10,7 +10,7 @@ declare interface Terrain {
   get(x: number, y: number): number
 }
 
-@profile
+
 export default class TerrainDecorator {
   private readonly tiles: Array<TileState>;
 

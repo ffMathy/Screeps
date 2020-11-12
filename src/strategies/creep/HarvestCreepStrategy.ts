@@ -1,9 +1,9 @@
 import CreepDecorator from "CreepDecorator";
 import { CreepStrategy } from "strategies/Strategy";
-import profile from "profiler";
+
 // import GameDecorator from "GameDecorator";
 
-@profile
+
 export default class HarvestCreepStrategy implements CreepStrategy {
   get name() {
     return "harvest";
@@ -15,7 +15,7 @@ export default class HarvestCreepStrategy implements CreepStrategy {
   ) {}
 
   tick() {
-    if(this.creep.creep.carry.energy == this.creep.creep.carryCapacity) {
+    if(this.creep.creep.store.getFreeCapacity() === 0) {
       return null;
     }
 

@@ -1,9 +1,9 @@
 import RoomsDecorator from "RoomsDecorator";
 import CreepDecorator from "CreepDecorator";
-import profile from "profiler";
+
 import DeferHelper from "helpers/DeferHelper";
 
-@profile
+
 export default class GameDecorator {
   public readonly rooms: RoomsDecorator;
 
