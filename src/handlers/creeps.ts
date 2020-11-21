@@ -5,6 +5,9 @@ import _ from "lodash";
 export function getCreepsHandler(): IntentHandlersInObjectForm["creeps"] {
     return {
         "walk": context => {
+            if(context.entity.fatigue <= 0)
+                return context.memory;
+
             if(context.entity.pos.x === context.args.target.x && context.entity.pos.y === context.args.target.y) {
                 return {
                     ...context.memory,
