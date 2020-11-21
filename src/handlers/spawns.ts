@@ -92,7 +92,10 @@ function getMostNeededCreepType(entity: StructureSpawn): CreepType {
     if(creepsByType.builder.length < 1)
         return "builder";
 
-    return "upgrader";
+    if(creepsByType.upgrader.length < 10)
+        return "upgrader";
+
+    return "builder";
 }
 
 function getBodyCost(body: BodyPartConstant[])

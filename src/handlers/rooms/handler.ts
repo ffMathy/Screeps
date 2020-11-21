@@ -20,7 +20,7 @@ export function getRoomsHandler(): IntentHandlersInObjectForm["rooms"] {
                         handleErrorCodes(() => context.entity.createConstructionSite(
                             position.x,
                             position.y,
-                            STRUCTURE_ROAD));
+                            STRUCTURE_EXTENSION));
                     }
                 }
 

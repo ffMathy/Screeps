@@ -103,6 +103,10 @@ export function getCreepsHandler(): IntentHandlersInObjectForm["creeps"] {
                     [ERR_NOT_ENOUGH_RESOURCES]: () => ({
                         ...context.memory,
                         intent: ["idle", {}]
+                    }),
+                    [ERR_INVALID_TARGET]: () => ({
+                        ...context.memory,
+                        intent: ["idle", {}]
                     })
                 });
         },

@@ -16,7 +16,7 @@ export function getWalkableSpiralTiles(position: RoomPosition, innerRadius: numb
         };
 
         const range = position.getRangeTo(currentPosition.x, currentPosition.y);
-        currentOffset += 2;
+        currentOffset += range > 1 ? 2 : 1;
 
         if(range > outerRadius)
             break;
