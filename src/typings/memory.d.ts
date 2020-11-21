@@ -9,15 +9,24 @@ declare interface Memory {
     isInitialized: boolean;
 }
 
+declare type CreepType = 
+    "transporter" |
+    "harvester" |
+    "upgrader" |
+    "builder";
+
 declare interface CreepMemory {
     intent: IntentTypes["creeps"]["intents"][number],
     name: string,
-    slotId: string
+    slotId: string,
+    type: CreepType,
+    roomName: string
 }
 
 declare interface SpawnMemory {
     intent: IntentTypes["spawns"]["intents"][number],
-    id: Id<StructureSpawn>
+    id: Id<StructureSpawn>,
+    lastIdleTick: number
 }
 
 declare interface RoomMemory {
@@ -27,7 +36,12 @@ declare interface RoomMemory {
         slotIds: Array<string>
     }>,
     visuals: Visuals,
-    name: string
+    name: string,
+    creepsByType: {
+        [P in CreepType]: string[]
+    },
+    currentRcl: number,
+    highways: Position[]
 }
 
 declare interface Position {

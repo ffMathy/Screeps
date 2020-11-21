@@ -1,11 +1,14 @@
 declare type IntentTypes = {
     spawns: IntentType<StructureSpawn, SpawnMemory, [
         ["create", {}],
-        IdleIntent
+        IdleIntent<{
+            cost?: number
+        }>
     ]>,
     creeps: IntentType<Creep, CreepMemory, [
         ["walk", {
             target: Position,
+            proximity: number,
             then: IntentsOfType<"creeps">[number]
         }],
         ["harvest", {
@@ -15,15 +18,28 @@ declare type IntentTypes = {
             ticks: number,
             then: IntentsOfType<"creeps">[number]
         }],
+        ["transfer", {
+            target: Id<StructureSpawn>
+        }],
+        ["build", {
+            target: Id<ConstructionSite>
+        }],
+        ["upgrade", {
+            target: Id<StructureController>
+        }],
+        ["take", {
+            target: Id<Resource>
+        }],
         IdleIntent,
         DeleteIntent
     ]>,
     rooms: IntentType<Room, RoomMemory, [
+        ["adapt", {}],
         IdleIntent
     ]>
 }
 
-declare type IdleIntent = ["idle", {}];
+declare type IdleIntent<T = {}> = ["idle", T];
 declare type DeleteIntent = ["delete", {}];
 
 declare type IntentType<TEntity, TMemory, TIntents extends [any, any][]> = {
@@ -52,7 +68,7 @@ declare type IntentHandler<TEntity extends keyof IntentTypes, THandler extends s
         intent: [TEntity, PickSpecificElement<THandler, IntentsOfType<TEntity>>]
     },
     entity: IntentTypes[TEntity]["entity"]
-}) => any;
+}) => IntentTypes[TEntity]["memory"];
 
 declare type IntentHandlersInObjectForm = {
     [P in keyof IntentTypes]: {
