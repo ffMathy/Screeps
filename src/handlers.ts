@@ -1,39 +1,43 @@
 import { getUniqueId } from "main";
+import { handleErrorCodes } from "errors";
 
 export const handlers: IntentHandlersInObjectForm = {
-    creeps: {
-        "harvest": 
-    }
-    // "spawns": {
-    //     "create": (memory, entity) => {
-    //         // const uniqueId = getUniqueId();
-    //         // entity.spawnCreep(
-    //         //     ["work", "carry", "move"],
-    //         //     uniqueId,
-    //         //     {
-    //         //         memory: {
-    //         //             uniqueId,
-    //         //             intent: "idle"
-    //         //         }
-    //         //     });
+    "spawns": {
+        "create": context => {
+            const uniqueId = getUniqueId();
+            context.entity.spawnCreep(
+                ["work", "carry", "move"],
+                uniqueId,
+                {
+                    memory: {
+                        uniqueId,
+                        intent: ["idle", {}]
+                    }
+                });
 
-    //         // return {
-    //         //     ...memory,
-    //         //     intent: "idle"
-    //         // };
-    //         return null;
-    //     },
-    //     "idle": (memory, entity) => {
-    //         // return {
-    //         //     ...memory,
-    //         //     intent: "create"
-    //         // }
-    //         return null;
-    //     }
-    // },
-    // "creeps": {
-    //     "walk": (memory, entity) => {
-    //         return null;
-    //     }
-    // }
+            return {
+                ...context.memory,
+                intent: ["idle", {}]
+            };
+        },
+        "idle": context => {
+            return {
+                ...context.memory,
+                intent: ["create", {}]
+            };
+        }
+    },
+    "creeps": {
+        "walk": context => {
+            handleErrorCodes(() => context.entity.moveTo(context.args.target));
+            return context.memory;
+        },
+        "harvest": context => context.memory,
+        "idle": context => {
+            return context.memory;
+        }
+    },
+    "rooms": {
+        "idle": context => context.memory
+    }
 }

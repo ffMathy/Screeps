@@ -8,6 +8,7 @@
     "experimentalDecorators": true,
     "noUnusedParameters": true,
     "noUnusedLocals": true,
+    "allowUmdGlobalAccess": true,
     "sourceMap": true,
     "lib": ["ES2015"],
     "baseUrl": "./src/"
