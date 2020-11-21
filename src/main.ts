@@ -1,23 +1,31 @@
 import { getWalkableSpiralTiles } from "coordinates";
-import { handlers } from "handlers";
-import { LoDashStatic } from "lodash";
-declare var _: LoDashStatic;
-
-var initialized = false;
+import errorMapper from "error-mapper";
+import { getHandlers } from "handlers/all";
+import _ = require("lodash");
 
 function initialize() {
-    initialized = true;
+    Memory.isInitialized = true;
+
+    Memory.slots = {};
 
     for(let spawn of _.values(Game.spawns)) {
         spawn.memory = {
-            uniqueId: spawn.name,
-            intent: ["idle", {}]
+            intent: ["idle", {}],
+            id: spawn.id
         }
+    }
+
+    for(let creep of _.values(Game.creeps)) {
+        creep.memory = {
+            intent: ["idle", {}],
+            name: creep.name,
+            slotId: null
+        };
     }
 
     for(let room of _.values(Game.rooms)) {
         room.memory = {
-            uniqueId: room.name,
+            name: room.name,
             intent: ["idle", {}],
             sources: [],
             visuals: {
@@ -32,12 +40,19 @@ function initialize() {
                     position: {
                         x: t.x,
                         y: t.y
-                    }
+                    },
+                    id: t.roomName + "/" + t.x + "/" + t.y
                 }))
             room.memory.sources.push({
                 id: source.id,
-                slots: slots
+                slotIds: slots.map(x => x.id)
             });
+            for(let slot of slots) {
+                Memory.slots[slot.id] = {
+                    position: slot.position,
+                    reservedBy: slot.reservedBy
+                }
+            }
 
             room.memory.visuals.circles.push(...slots.map(slot => ({
                 position: {
@@ -53,32 +68,68 @@ function initialize() {
 }
 
 export function getUniqueId() {
-    Memory.uniqueId = +Memory.uniqueId + 1;
-    return Memory.uniqueId + "";
+    Memory.uniqueId = (+Memory.uniqueId + 1) % 1000;
+    return (Memory.uniqueId + (Game.time * 1000)) + "";
 }
 
 function tick(type: keyof Game) {
     const typeMemory = Memory[type];
+
+    const handlers = getHandlers();
     for(let typeMemoryKey in typeMemory) {
-        const intent = typeMemory[typeMemoryKey].intent;
-        typeMemory[typeMemoryKey] = handlers[type][intent[0]]({
+        const specificMemory = typeMemory[typeMemoryKey];
+
+        const intent = specificMemory.intent;
+        const intentKey = intent[0];
+
+        const handler = handlers[type][intentKey];
+
+        const entity = specificMemory.id ?
+            Game.getObjectById(specificMemory.id) :
+            Game[type][specificMemory.name];
+
+        const context = {
             args: intent[1],
-            entity: Game[type][typeMemory[typeMemoryKey].uniqueId], 
-            memory: typeMemory[typeMemoryKey]
-        });
+            entity: entity || null, 
+            memory: specificMemory
+        };
+
+        if(!entity) {
+            console.log('deleting', typeMemoryKey);
+
+            const deleteHandler = handlers[type]["delete"];
+            if(deleteHandler)
+                deleteHandler(context);
+
+            delete typeMemory[typeMemoryKey];
+            continue;
+        }
+
+        if(!handler) {
+            throw new Error("No handler for type and intent " + JSON.stringify(specificMemory));
+        }
+
+        typeMemory[typeMemoryKey] = handler(context);
     }
 }
 
-export const loop = function() {
-    if(!initialized)
-        initialize();
-        
-    tick("spawns");
-    tick("creeps");
-    tick("rooms");
+global["clear"] = () => {
+    for(let key of _.keys(Memory))
+        delete Memory[key];
+}
 
-    for(let room of _.values(Game.rooms)) {
-        for(let circle of room.memory.visuals.circles)
-            room.visual.circle(circle.position.x, circle.position.y, circle.style);
-    }
+export const loop = function() {
+    errorMapper(() => {
+        if(!Memory.isInitialized)
+            initialize();
+            
+        tick("spawns");
+        tick("creeps");
+        tick("rooms");
+
+        for(let room of _.values(Game.rooms)) {
+            for(let circle of room.memory.visuals.circles)
+                room.visual.circle(circle.position.x, circle.position.y, circle.style);
+        }
+    })();
 }

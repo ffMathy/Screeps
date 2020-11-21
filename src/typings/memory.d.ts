@@ -1,16 +1,33 @@
 declare interface Memory {
-    population: number,
-    uniqueId: number
+    slots: {
+        [id: string]: {
+            position: Position,
+            reservedBy: Id<Creep>
+        }
+    };
+    uniqueId: number;
+    isInitialized: boolean;
 }
 
 declare interface CreepMemory {
     intent: IntentTypes["creeps"]["intents"][number],
-    uniqueId: string
+    name: string,
+    slotId: string
 }
 
 declare interface SpawnMemory {
     intent: IntentTypes["spawns"]["intents"][number],
-    uniqueId: string
+    id: Id<StructureSpawn>
+}
+
+declare interface RoomMemory {
+    intent: IntentTypes["rooms"]["intents"][number],
+    sources: Array<{
+        id: Id<Source>,
+        slotIds: Array<string>
+    }>,
+    visuals: Visuals,
+    name: string
 }
 
 declare interface Position {
@@ -23,17 +40,4 @@ declare interface Visuals {
         position: Position,
         style: CircleStyle
     }>
-}
-
-declare interface RoomMemory {
-    intent: IntentTypes["rooms"]["intents"][number],
-    uniqueId: string,
-    sources: Array<{
-        id: string,
-        slots: Array<{
-            position: Position,
-            reservedBy: string
-        }>
-    }>,
-    visuals: Visuals
 }

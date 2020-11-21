@@ -1,5 +1,5 @@
 /* tslint:disable:no-var-requires */
-import * as Config from "webpack-chain";
+import Config from "webpack-chain";
 
 import * as CommonConfig from "./config.common";
 import { EnvOptions } from "./types";

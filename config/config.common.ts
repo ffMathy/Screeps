@@ -1,6 +1,6 @@
-import * as path from "path";
-import * as webpack from "webpack";
-import * as Config from "webpack-chain";
+import path from "path";
+import webpack from "webpack";
+import Config from "webpack-chain";
 import { ScreepsSourceMapToJson } from "../libs/screeps-webpack-sources";
 
 // Plugins:
